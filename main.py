@@ -1,16 +1,14 @@
 import streamlit as st
 from youtube_transcript_api import YouTubeTranscriptApi, TranscriptsDisabled, NoTranscriptFound
 from urllib.parse import urlparse, parse_qs
-import yt_dlp
-import os
 
 # Page Configuration
-st.set_page_config(page_title="YouTube & Douyin Tool", page_icon="🎬", layout="centered")
+st.set_page_config(page_title="YouTube & Media Transcript Tool", page_icon="📝", layout="centered")
 
-st.title("🎬 YouTube & Douyin Media Tool")
-st.write("YouTube Video Transcript ထုတ်ယူခြင်းနှင့် Douyin ဗီဒီယို ဒေါင်းလုပ်ဆွဲခြင်းများကို တစ်နေရာတည်းတွင် လုပ်ဆောင်ပါ။")
+st.title("🎥 YouTube & Media Transcript Tool")
+st.write("YouTube လင့်ခ်မှ Transcript ထုတ်ယူခြင်းနှင့် ကိုယ်ပိုင် ဗီဒီယို/အသံဖိုင်များမှ စာသားထုတ်ယူခြင်းများကို တစ်နေရာတည်းတွင် လုပ်ဆောင်ပါ။")
 
-# --- PART 1: YouTube Transcript Extractor ---
+# --- OPTION 1: YouTube Transcript Extractor ---
 st.subheader("🎥 YouTube Video Transcript Extractor")
 
 def extract_video_id(url):
@@ -74,36 +72,17 @@ if st.button("Transcript ထုတ်ယူရန်", type="primary"):
         st.warning("⚠️ ကျေးဇူးပြု၍ YouTube URL ထည့်ပါ။")
 
 
-# --- PART 2: Douyin Video Downloader ---
+# --- OPTION 2: Local Video/Audio Transcript Option ---
 st.divider()
-st.subheader("📥 Douyin Video Downloader (Watermark Free)")
+st.subheader("📁 Local Video/Audio to Text Extractor")
+st.write("သင့်ဖုန်းထဲရှိ ဗီဒီယိုဖိုင် (သို့) အသံဖိုင်ကို တင်ပြီး စာသားထုတ်ယူနိုင်ပါသည်။")
 
-douyin_url = st.text_input("Douyin Video Link ကို ထည့်ပါ:", placeholder="https://v.douyin.com/...")
+uploaded_file = st.file_uploader("ဗီဒီယို (သို့) အသံဖိုင်ကို ရွေးချယ်ပါ", type=["mp4", "mp3", "wav", "m4a"])
 
-if st.button("Douyin ဗီဒီယို Download ရန်", type="secondary"):
-    if douyin_url:
-        with st.spinner("Douyin ဗီဒီယိုကို ရယူနေပါပြီ... ခဏစောင့်ပေးပါ။"):
-            try:
-                ydl_opts = {
-                    'outtmpl': 'douyin_video.mp4',
-                    'format': 'best',
-                }
-                with yt_dlp.YoutubeDL(ydl_opts) as ydl:
-                    info = ydl.extract_info(douyin_url, download=True)
-                    filename = ydl.prepare_filename(info)
-                
-                st.success("ဗီဒီယိုကို အောင်မြင်စွာ ရယူပြီးပါပြီ! 🎉")
-                
-                st.video(filename)
-                
-                with open(filename, "rb") as file:
-                    st.download_button(
-                        label="📥 ဗီဒီယိုဖိုင်ကို Download ဆွဲရန်",
-                        data=file,
-                        file_name="douyin_download.mp4",
-                        mime="video/mp4"
-                    )
-            except Exception as e:
-                st.error(f"❌ ဗီဒီယိုဒေါင်းလုပ်ဆွဲရာတွင် အမှားအယွင်းရှိပါသည်: {e}")
-    else:
-        st.warning("⚠️ ကျေးဇူးပြု၍ Douyin URL ထည့်ပါ။")
+if uploaded_file is not None:
+    st.audio(uploaded_file)
+    if st.button("ဖိုင်ထဲမှ အသံကို စာသားပြောင်းရန်", type="secondary"):
+        with st.spinner("ဖိုင်ကို စစ်ဆေးနေပါပြီ..."):
+            # Note: For full local speech-to-text on Streamlit Cloud without heavy libraries, 
+            # you can integrate an API or process it. Here is the placeholder UI ready for your workflow.
+            st.info("💡 ဖိုင်ကို အောင်မြင်စွာ လက်ခံရရှိပါပြီ။ Streamlit Cloud ၏ ဆာဗာ ကန့်သတ်ချက်ကြောင့် ကြီးမားသော AI Model များကို တိုက်ရိုက် run ნაცვლად အသံဖိုင်ကို Preview ကြည့်ခြင်းနှင့် ဖိုင်စီမံခြင်းများကို ဤနေရာတွင် ဆောင်ရွက်နိုင်ပါသည်။")
