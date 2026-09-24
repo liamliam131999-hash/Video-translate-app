@@ -2,6 +2,8 @@ import streamlit as st
 from youtube_transcript_api import YouTubeTranscriptApi, TranscriptsDisabled, NoTranscriptFound
 from urllib.parse import urlparse, parse_qs
 import os
+import google.generativeai as genai
+from groq import Groq
 
 # Page Configuration
 st.set_page_config(page_title="YouTube & Media Transcript Tool", page_icon="📝", layout="centered")
@@ -73,15 +75,15 @@ if st.button("Transcript ထုတ်ယူရန်", type="primary"):
         st.warning("⚠️ ကျေးဇူးပြု၍ YouTube URL ထည့်ပါ။")
 
 
-# --- OPTION 2: Local Video/Audio Transcript Option with API Keys on Main Page ---
+# --- OPTION 2: Local Video/Audio Transcript Option with Real API Integration ---
 st.divider()
 st.subheader("📁 Local Video/Audio to Text Extractor")
 
-# API Keys input directly on Main Page for easy mobile access
-st.write("🔑 **API Keys ထည့်သွင်းရန်**")
-groq_api_key = st.text_input("Groq API Key ထည့်ရန်:", type="password", key="groq_key")
-gemini_api_key = st.text_input("Gemini API Key ထည့်ရန်:", type="password", key="gemini_key")
+st.markdown("### 🔑 API Keys ထည့်သွင်းရန်")
+groq_api_key = st.text_input("Groq API Key ထည့်ရန်:", type="password", key="groq_key_main")
+gemini_api_key = st.text_input("Gemini API Key ထည့်ရန်:", type="password", key="gemini_key_main")
 
+st.markdown("---")
 st.write("ဖိုင်အမျိုးအစားကို ရွေးချယ်ပြီး ဗီဒီယို (သို့) အသံဖိုင်ကို တင်ပါ။")
 
 file_choice = st.radio("ဖိုင် အမျိုးအစား ရွေးချယ်ရန်:", ["အသံဖိုင် (Audio - mp3, wav, m4a)", "ဗီဒီယိုဖိုင် (Video - mp4, mkv, mov)"])
@@ -97,13 +99,63 @@ if uploaded_file is not None:
     else:
         st.video(uploaded_file)
         
-    ai_choice = st.selectbox("အသုံးပြုမည့် AI ဝန်ဆောင်မှုကို ရွေးပါ:", ["Groq API", "Gemini API"])
+    ai_choice = st.selectbox("အသုံးပြုမည့် AI ဝန်ဆောင်မှုကို ရွေးပါ:", ["Groq API (Whisper)", "Gemini API"])
     
     if st.button("ဖိုင်ထဲမှ အသံကို စာသားပြောင်းရန်", type="secondary"):
-        if ai_choice == "Groq API" and not groq_api_key:
+        if ai_choice == "Groq API (Whisper)" and not groq_api_key:
             st.warning("⚠️ ကျေးဇူးပြု၍ Groq API Key ထည့်သွင်းပေးပါ။")
         elif ai_choice == "Gemini API" and not gemini_api_key:
             st.warning("⚠️ ကျေးဇူးပြု၍ Gemini API Key ထည့်သွင်းပေးပါ။")
         else:
-            with st.spinner("ဖိုင်ကို AI ဖြင့် စာသားပြောင်းလဲနေပါပြီ..."):
-                st.info(f"💡 ရွေးချယ်ထားသော {ai_choice} ဖြင့် ဖိုင်ကို စီမံဆောင်ရွက်ရန် အဆင်သင့်ဖြစ်ပါပြီ။ API ချိတ်ဆက်မှု ကုဒ်များ ဆက်လက်ထည့်သွင်းရန် လိုအပ်ပါသည်။")
+            with st.spinner("ဖိုင်ကို AI ဖြင့် စာသားပြောင်းလဲနေပါပြီ... ခဏစောင့်ပေးပါ။"):
+                try:
+                    # Save uploaded file temporarily to disk
+                    temp_file_path = f"temp_{uploaded_file.name}"
+                    with open(temp_file_path, "wb") as f:
+                        f.write(uploaded_file.getbuffer())
+                    
+                    transcript_result = ""
+                    
+                    if ai_choice == "Groq API (Whisper)":
+                        client = Groq(api_key=groq_api_key)
+                        with open(temp_file_path, "rb") as audio_file:
+                            translation = client.audio.transcriptions.create(
+                                file=(temp_file_path, audio_file.read()),
+                                model="whisper-large-v3",
+                                response_format="text"
+                            )
+                        transcript_result = translation
+                        
+                    elif ai_choice == "Gemini API":
+                        genai.configure(api_key=gemini_api_key)
+                        # Upload file to Gemini File API
+                        st.info("📤 Gemini သို့ ဖိုင်တင်နေပါပြီ...")
+                        g_file = genai.upload_file(temp_file_path)
+                        
+                        # Use Gemini model to transcribe or extract audio content
+                        model = genai.GenerativeModel("gemini-1.5-flash")
+                        response = model.generate_content([g_file, "Listen to this audio/video file and provide a complete transcript or detailed summary of what is being said."])
+                        transcript_result = response.text
+                        
+                        # Clean up uploaded file from Gemini
+                        genai.delete_file(g_file.name)
+                    
+                    # Remove local temp file
+                    if os.path.exists(temp_file_path):
+                        os.remove(temp_file_path)
+                        
+                    st.success("စာသားထုတ်ယူခြင်း အောင်မြင်ပါသည်။ 🎉")
+                    st.markdown("### ရလာသော စာသားများ:")
+                    st.write(transcript_result)
+                    
+                    st.download_button(
+                        label="📥 ရလာတဲ့ စာသားများကို Download ရန်",
+                        data=transcript_result,
+                        file_name="media_transcript.txt",
+                        mime="text/plain"
+                    )
+                    
+                except Exception as e:
+                    if os.path.exists(temp_file_path):
+                        os.remove(temp_file_path)
+                    st.error(f"❌ လုပ်ဆောင်ရာတွင် အမှားအယွင်း ဖြစ်ပေါ်သွားပါပြီ: {e}")
