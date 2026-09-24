@@ -9,12 +9,6 @@ st.set_page_config(page_title="YouTube & Media Transcript Tool", page_icon="📝
 st.title("🎥 YouTube & Media Transcript Tool")
 st.write("YouTube လင့်ခ်မှ Transcript ထုတ်ယူခြင်းနှင့် AI API (Groq/Gemini) များကို အသုံးပြု၍ အသံ/ဗီဒီယိုဖိုင်များမှ စာသားထုတ်ယူခြင်းများကို တစ်နေရာတည်းတွင် လုပ်ဆောင်ပါ။")
 
-# --- SIDEBAR: API Keys Configuration ---
-st.sidebar.header("🔑 API Keys ထည့်သွင်းရန်")
-groq_api_key = st.sidebar.text_input("Groq API Key ထည့်ရန်:", type="password")
-gemini_api_key = st.sidebar.text_input("Gemini API Key ထည့်ရန်:", type="password")
-
-
 # --- OPTION 1: YouTube Transcript Extractor ---
 st.subheader("🎥 YouTube Video Transcript Extractor")
 
@@ -79,12 +73,17 @@ if st.button("Transcript ထုတ်ယူရန်", type="primary"):
         st.warning("⚠️ ကျေးဇူးပြု၍ YouTube URL ထည့်ပါ။")
 
 
-# --- OPTION 2: Local Video/Audio Transcript Option with AI API ---
+# --- OPTION 2: Local Video/Audio Transcript Option with API Keys on Main Page ---
 st.divider()
 st.subheader("📁 Local Video/Audio to Text Extractor")
+
+# API Keys input directly on Main Page for easy mobile access
+st.write("🔑 **API Keys ထည့်သွင်းရန်**")
+groq_api_key = st.text_input("Groq API Key ထည့်ရန်:", type="password", key="groq_key")
+gemini_api_key = st.text_input("Gemini API Key ထည့်ရန်:", type="password", key="gemini_key")
+
 st.write("ဖိုင်အမျိုးအစားကို ရွေးချယ်ပြီး ဗီဒီယို (သို့) အသံဖိုင်ကို တင်ပါ။")
 
-# Choose file type option
 file_choice = st.radio("ဖိုင် အမျိုးအစား ရွေးချယ်ရန်:", ["အသံဖိုင် (Audio - mp3, wav, m4a)", "ဗီဒီယိုဖိုင် (Video - mp4, mkv, mov)"])
 
 if "အသံဖိုင်" in file_choice:
@@ -102,10 +101,9 @@ if uploaded_file is not None:
     
     if st.button("ဖိုင်ထဲမှ အသံကို စာသားပြောင်းရန်", type="secondary"):
         if ai_choice == "Groq API" and not groq_api_key:
-            st.warning("⚠️ ကျေးဇူးပြု၍ Sidebar တွင် Groq API Key ထည့်သွင်းပေးပါ။")
+            st.warning("⚠️ ကျေးဇူးပြု၍ Groq API Key ထည့်သွင်းပေးပါ။")
         elif ai_choice == "Gemini API" and not gemini_api_key:
-            st.warning("⚠️ ကျေးဇူးပြု၍ Sidebar တွင် Gemini API Key ထည့်သွင်းပေးပါ။")
+            st.warning("⚠️ ကျေးဇူးပြု၍ Gemini API Key ထည့်သွင်းပေးပါ။")
         else:
             with st.spinner("ဖိုင်ကို AI ဖြင့် စာသားပြောင်းလဲနေပါပြီ..."):
-                # Placeholder for API processing execution logic
                 st.info(f"💡 ရွေးချယ်ထားသော {ai_choice} ဖြင့် ဖိုင်ကို စီမံဆောင်ရွက်ရန် အဆင်သင့်ဖြစ်ပါပြီ။ API ချိတ်ဆက်မှု ကုဒ်များ ဆက်လက်ထည့်သွင်းရန် လိုအပ်ပါသည်။")
