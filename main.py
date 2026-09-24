@@ -8,23 +8,18 @@ st.set_page_config(page_title="YouTube Transcript Extractor", page_icon="📝", 
 st.title("🎥 YouTube Video Transcript Extractor")
 st.write("YouTube Video သို့မဟုတ် Shorts Link ကို ထည့်သွင်းပြီး Transcript (စာသားများ) ကို အလွယ်တကူ ထုတ်ယူပါ။")
 
-# Function to extract Video ID from various YouTube URL formats (including /shorts/)
+# Function to extract Video ID from various YouTube URL formats
 def extract_video_id(url):
     parsed_url = urlparse(url)
-    # Handle youtu.be links
     if parsed_url.hostname in ['youtu.be']:
         return parsed_url.path[1:]
     
-    # Handle youtube.com links
     if parsed_url.hostname in ['www.youtube.com', 'youtube.com']:
         path_parts = parsed_url.path.split('/')
-        # Handle /shorts/VIDEO_ID
         if len(path_parts) > 2 and path_parts[1] == 'shorts':
             return path_parts[2]
-        # Handle /watch?v=VIDEO_ID
         elif parsed_url.path == '/watch':
             return parse_qs(parsed_url.query).get('v', [None])[0]
-        # Handle /embed/ or /v/
         elif parsed_url.path.startswith(('/embed/', '/v/')):
             return path_parts[2]
             
@@ -40,20 +35,20 @@ if st.button("Transcript ထုတ်ယူရန်", type="primary"):
         if video_id:
             with st.spinner("Transcript ကို ရှာဖွေနေပါပြီ... ခဏစောင့်ပေးပါ။"):
                 try:
-                    # Fetch transcript
-                    transcript_list = YouTubeTranscriptApi.get_transcript(video_id)
+                    # Fetch transcript using the updated approach for newer library versions
+                    transcript_list = YouTubeTranscriptApi.fetch(video_id)
                     
                     st.success("Transcript အောင်မြင်စွာ ရရှိပါပြီ! 🎉")
                     
                     # Format transcript with timestamps
                     formatted_text = ""
                     for entry in transcript_list:
-                        start_time = int(entry['start'])
+                        start_time = int(entry.start)
                         minutes = start_time // 60
                         seconds = start_time % 60
                         timestamp = f"[{minutes:02d}:{seconds:02d}]"
                         
-                        text = entry['text']
+                        text = entry.text
                         formatted_text += f"{timestamp} {text}\n"
                         
                         # Display on UI
