@@ -1,14 +1,18 @@
 import streamlit as st
 from youtube_transcript_api import YouTubeTranscriptApi, TranscriptsDisabled, NoTranscriptFound
 from urllib.parse import urlparse, parse_qs
+import yt_dlp
+import os
 
 # Page Configuration
-st.set_page_config(page_title="YouTube Transcript Extractor", page_icon="📝", layout="centered")
+st.set_page_config(page_title="YouTube & Douyin Tool", page_icon="🎬", layout="centered")
 
-st.title("🎥 YouTube Video Transcript Extractor")
-st.write("YouTube Video သို့မဟုတ် Shorts Link ကို ထည့်သွင်းပြီး Transcript (စာသားများ) ကို အလွယ်တကူ ထုတ်ယူပါ။")
+st.title("🎬 YouTube & Douyin Media Tool")
+st.write("YouTube Video Transcript ထုတ်ယူခြင်းနှင့် Douyin ဗီဒီယို ဒေါင်းလုပ်ဆွဲခြင်းများကို တစ်နေရာတည်းတွင် လုပ်ဆောင်ပါ။")
 
-# Function to extract Video ID from various YouTube URL formats
+# --- PART 1: YouTube Transcript Extractor ---
+st.subheader("🎥 YouTube Video Transcript Extractor")
+
 def extract_video_id(url):
     parsed_url = urlparse(url)
     if parsed_url.hostname in ['youtu.be']:
@@ -25,7 +29,6 @@ def extract_video_id(url):
             
     return None
 
-# Input field for YouTube URL
 youtube_url = st.text_input("YouTube Video URL ကို ထည့်ပါ:", placeholder="https://www.youtube.com/shorts/...")
 
 if st.button("Transcript ထုတ်ယူရန်", type="primary"):
@@ -35,16 +38,13 @@ if st.button("Transcript ထုတ်ယူရန်", type="primary"):
         if video_id:
             with st.spinner("Transcript ကို ရှာဖွေနေပါပြီ... ခဏစောင့်ပေးပါ။"):
                 try:
-                    # Initialize the API instance for the latest library version
                     ytt_api = YouTubeTranscriptApi()
                     transcript_list = ytt_api.fetch(video_id)
                     
                     st.success("Transcript အောင်မြင်စွာ ရရှိပါပြီ! 🎉")
                     
-                    # Format transcript with timestamps
                     formatted_text = ""
                     for entry in transcript_list:
-                        # Extract attributes directly from the snippet object
                         start_time = int(entry.start)
                         minutes = start_time // 60
                         seconds = start_time % 60
@@ -53,10 +53,8 @@ if st.button("Transcript ထုတ်ယူရန်", type="primary"):
                         text = entry.text
                         formatted_text += f"{timestamp} {text}\n"
                         
-                        # Display on UI
                         st.markdown(f"**`{timestamp}`** {text}")
                     
-                    # Download button for transcript
                     st.download_button(
                         label="📥 Transcript ကို Text ဖိုင်ဖြင့် Download ရန်",
                         data=formatted_text,
@@ -74,3 +72,38 @@ if st.button("Transcript ထုတ်ယူရန်", type="primary"):
             st.warning("⚠️ မှန်ကန်သော YouTube URL (သို့မဟုတ် Shorts URL) ကို ထည့်သွင်းပေးပါ။")
     else:
         st.warning("⚠️ ကျေးဇူးပြု၍ YouTube URL ထည့်ပါ။")
+
+
+# --- PART 2: Douyin Video Downloader ---
+st.divider()
+st.subheader("📥 Douyin Video Downloader (Watermark Free)")
+
+douyin_url = st.text_input("Douyin Video Link ကို ထည့်ပါ:", placeholder="https://v.douyin.com/...")
+
+if st.button("Douyin ဗီဒီယို Download ရန်", type="secondary"):
+    if douyin_url:
+        with st.spinner("Douyin ဗီဒီယိုကို ရယူနေပါပြီ... ခဏစောင့်ပေးပါ။"):
+            try:
+                ydl_opts = {
+                    'outtmpl': 'douyin_video.mp4',
+                    'format': 'best',
+                }
+                with yt_dlp.YoutubeDL(ydl_opts) as ydl:
+                    info = ydl.extract_info(douyin_url, download=True)
+                    filename = ydl.prepare_filename(info)
+                
+                st.success("ဗီဒီယိုကို အောင်မြင်စွာ ရယူပြီးပါပြီ! 🎉")
+                
+                st.video(filename)
+                
+                with open(filename, "rb") as file:
+                    st.download_button(
+                        label="📥 ဗီဒီယိုဖိုင်ကို Download ဆွဲရန်",
+                        data=file,
+                        file_name="douyin_download.mp4",
+                        mime="video/mp4"
+                    )
+            except Exception as e:
+                st.error(f"❌ ဗီဒီယိုဒေါင်းလုပ်ဆွဲရာတွင် အမှားအယွင်းရှိပါသည်: {e}")
+    else:
+        st.warning("⚠️ ကျေးဇူးပြု၍ Douyin URL ထည့်ပါ။")
