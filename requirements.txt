@@ -1,3 +1,6 @@
-yt-dlp
 streamlit
 youtube-transcript-api
+groq
+google-generativeai
+yt-dlp
+streamlit
