@@ -35,20 +35,21 @@ if st.button("Transcript ထုတ်ယူရန်", type="primary"):
         if video_id:
             with st.spinner("Transcript ကို ရှာဖွေနေပါပြီ... ခဏစောင့်ပေးပါ။"):
                 try:
-                    # Fetch transcript using the correct method
-                    transcript_list = YouTubeTranscriptApi.get_transcript(video_id)
+                    # Initialize the API instance for the latest library version
+                    ytt_api = YouTubeTranscriptApi()
+                    transcript_list = ytt_api.fetch(video_id)
                     
                     st.success("Transcript အောင်မြင်စွာ ရရှိပါပြီ! 🎉")
                     
                     # Format transcript with timestamps
                     formatted_text = ""
                     for entry in transcript_list:
-                        start_time = int(entry['start'])
+                        start_time = int(entry.get('start', 0))
                         minutes = start_time // 60
                         seconds = start_time % 60
                         timestamp = f"[{minutes:02d}:{seconds:02d}]"
                         
-                        text = entry['text']
+                        text = entry.get('text', '')
                         formatted_text += f"{timestamp} {text}\n"
                         
                         # Display on UI
