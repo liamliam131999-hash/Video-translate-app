@@ -6,22 +6,32 @@ from urllib.parse import urlparse, parse_qs
 st.set_page_config(page_title="YouTube Transcript Extractor", page_icon="📝", layout="centered")
 
 st.title("🎥 YouTube Video Transcript Extractor")
-st.write("YouTube Video Link ကို ထည့်သွင်းပြီး Transcript (စာသားများ) ကို အလွယ်တကူ ထုတ်ယူပါ။")
+st.write("YouTube Video သို့မဟုတ် Shorts Link ကို ထည့်သွင်းပြီး Transcript (စာသားများ) ကို အလွယ်တကူ ထုတ်ယူပါ။")
 
-# Function to extract Video ID from various YouTube URL formats
+# Function to extract Video ID from various YouTube URL formats (including /shorts/)
 def extract_video_id(url):
     parsed_url = urlparse(url)
+    # Handle youtu.be links
     if parsed_url.hostname in ['youtu.be']:
         return parsed_url.path[1:]
+    
+    # Handle youtube.com links
     if parsed_url.hostname in ['www.youtube.com', 'youtube.com']:
-        if parsed_url.path == '/watch':
+        path_parts = parsed_url.path.split('/')
+        # Handle /shorts/VIDEO_ID
+        if len(path_parts) > 2 and path_parts[1] == 'shorts':
+            return path_parts[2]
+        # Handle /watch?v=VIDEO_ID
+        elif parsed_url.path == '/watch':
             return parse_qs(parsed_url.query).get('v', [None])[0]
+        # Handle /embed/ or /v/
         elif parsed_url.path.startswith(('/embed/', '/v/')):
-            return parsed_url.path.split('/')[2]
+            return path_parts[2]
+            
     return None
 
 # Input field for YouTube URL
-youtube_url = st.text_input("YouTube Video URL ကို ထည့်ပါ:", placeholder="https://www.youtube.com/watch?v=...")
+youtube_url = st.text_input("YouTube Video URL ကို ထည့်ပါ:", placeholder="https://www.youtube.com/shorts/...")
 
 if st.button("Transcript ထုတ်ယူရန်", type="primary"):
     if youtube_url:
@@ -64,6 +74,6 @@ if st.button("Transcript ထုတ်ယူရန်", type="primary"):
                 except Exception as e:
                     st.error(f"❌ အမှားအယွင်း တစ်စုံတစ်ရာ ဖြစ်ပွားသွားပါပြီ: {e}")
         else:
-            st.warning("⚠️ မှန်ကန်သော YouTube URL ကို ထည့်သွင်းပေးပါ။")
+            st.warning("⚠️ မှန်ကန်သော YouTube URL (သို့မဟုတ် Shorts URL) ကို ထည့်သွင်းပေးပါ။")
     else:
         st.warning("⚠️ ကျေးဇူးပြု၍ YouTube URL ထည့်ပါ။")
