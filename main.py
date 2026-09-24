@@ -44,12 +44,13 @@ if st.button("Transcript ထုတ်ယူရန်", type="primary"):
                     # Format transcript with timestamps
                     formatted_text = ""
                     for entry in transcript_list:
-                        start_time = int(entry.get('start', 0))
+                        # Extract attributes directly from the snippet object
+                        start_time = int(entry.start)
                         minutes = start_time // 60
                         seconds = start_time % 60
                         timestamp = f"[{minutes:02d}:{seconds:02d}]"
                         
-                        text = entry.get('text', '')
+                        text = entry.text
                         formatted_text += f"{timestamp} {text}\n"
                         
                         # Display on UI
