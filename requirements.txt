@@ -1,6 +1,0 @@
-streamlit
-youtube-transcript-api
-groq
-google-generativeai
-moviepy
-yt-dlp
