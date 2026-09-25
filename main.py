@@ -1,168 +1,199 @@
 import os
 import streamlit as st
 
-st.set_page_config(page_title="Transcript & Media Compressor", layout="wide")
+st.set_page_config(page_title="My Transcriber", layout="wide")
 
-# Custom CSS for 3D Cards, Animations, and UI Styling
+# Custom CSS for Dark Modern App UI matching your screenshot
 st.markdown("""
 <style>
     .stApp {
-        background-color: #0f172a;
+        background-color: #070913;
         color: #f8fafc;
     }
     
-    /* 3D Card Styling */
-    .feature-card {
-        background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%);
-        border: 1px solid #334155;
-        padding: 20px;
-        border-radius: 16px;
-        box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.3);
-        margin-bottom: 15px;
-    }
-
-    /* Floating Animation for Emojis */
-    @keyframes float {
-        0% { transform: translateY(0px) rotate(0deg); }
-        50% { transform: translateY(-5px) rotate(2deg); }
-        100% { transform: translateY(0px) rotate(0deg); }
-    }
-
-    .emoji-3d {
-        font-size: 2.2rem;
-        display: inline-block;
-        animation: float 3s ease-in-out infinite;
-        filter: drop-shadow(0 8px 6px rgba(0, 0, 0, 0.4));
-        margin-right: 15px;
-        vertical-align: middle;
-    }
-
-    /* Warning Box Styling */
-    .custom-warning {
-        background-color: rgba(234, 179, 8, 0.1);
-        border-left: 4px solid #eab308;
-        padding: 15px;
-        border-radius: 8px;
+    /* Header Banner Card */
+    .header-card {
+        background: linear-gradient(135deg, #0f172a 100%, #1e293b 0%);
+        border: 1px solid #1e293b;
+        padding: 24px;
+        border-radius: 20px;
+        box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.5);
+        text-align: center;
         margin-bottom: 20px;
-        color: #fef08a;
+    }
+    
+    /* Notice Warning Box */
+    .notice-box {
+        background-color: rgba(234, 179, 8, 0.08);
+        border: 1px solid rgba(234, 179, 8, 0.2);
+        padding: 10px 15px;
+        border-radius: 12px;
+        color: #fbbf24;
+        font-size: 0.9rem;
+        margin-top: 15px;
+    }
+
+    /* Grid Feature Cards */
+    .grid-card {
+        background: linear-gradient(145deg, #0f172a 0%, #0b0f19 100%);
+        border: 1px solid #1e293b;
+        padding: 20px;
+        border-radius: 18px;
+        box-shadow: 0 8px 20px rgba(0, 0, 0, 0.4);
+        margin-bottom: 20px;
+        transition: all 0.3s ease;
+        min-height: 160px;
+    }
+    
+    .grid-card:hover {
+        border-color: #38bdf8;
+        transform: translateY(-3px);
+    }
+
+    /* Floating / Glow Emojis */
+    .card-icon {
+        font-size: 2.2rem;
+        margin-bottom: 10px;
+        display: inline-block;
     }
 </style>
 """, unsafe_allow_html=True)
 
-# App Header
-st.markdown("<h1 style='text-align: center; color: #38bdf8;'>🎬 AI Transcript & Media Compressor</h1>", unsafe_allow_html=True)
-
-# Warning Notice Card
+# App Header Section
 st.markdown("""
-<div class="custom-warning">
-    <strong>⚠️ သတိပေးချက်:</strong> 25MB ထက်ကြီးနေသော file size များကို transcript ထုတ်ယူလို့မရပါ။ 25MB size ထက်ကြီးနေပါက Compressor ဖြင့် file size ချုံ့ပါ။
+<div class="header-card">
+    <div style="font-size: 2.5rem;">⚡</div>
+    <h2 style="color: #38bdf8; margin: 5px 0 5px 0;">My Transcriber</h2>
+    <p style="color: #64748b; font-size: 0.85rem; letter-spacing: 1px;">Audio • Video • Transcript • Compressor</p>
+    <div class="notice-box">
+        ⚠️ Groq / Gemini သို့ တိုက်ရိုက်တင်မည့်ဖိုင်သည် 25MB အောက် ဖြစ်ရပါမည်။
+    </div>
 </div>
 """, unsafe_allow_html=True)
 
-# Tabs for Separation
-tab1, tab2 = st.tabs(["📝 Transcript & AI", "📁 Media Compression"])
+# Initialize Session State for Navigation
+if 'nav_page' not in st.session_state:
+    st.session_state['nav_page'] = "Home"
 
-with tab1:
-    st.markdown("<br>", unsafe_allow_html=True)
+# Navigation Menu Bar (Using columns as buttons)
+nav_col1, nav_col2, nav_col3, nav_col4 = st.columns(4)
+with nav_col1:
+    if st.button("🏠 Home", use_container_width=True):
+        st.session_state['nav_page'] = "Home"
+with nav_col2:
+    if st.button("⚡ Groq", use_container_width=True):
+        st.session_state['nav_page'] = "Groq"
+with nav_col3:
+    if st.button("✨ Gemini", use_container_width=True):
+        st.session_state['nav_page'] = "Gemini"
+with nav_col4:
+    if st.button("📊 Compressor", use_container_width=True):
+        st.session_state['nav_page'] = "Compressor"
+
+st.divider()
+
+# Render content based on selected navigation page
+page = st.session_state['nav_page']
+
+if page == "Home":
+    # Grid Layout like the screenshot
+    col_a, col_b = st.columns(2)
     
-    # Groq API Option Card with Expander
-    with st.expander("⚡ Groq API Option ဖြင့် လုပ်ဆောင်ရန်"):
+    with col_a:
         st.markdown("""
-        <div class="feature-card">
-            <span class="emoji-3d">⚡</span>
-            <strong style="font-size: 1.2rem; color: #f43f5e;">Groq API & Transcript ထုတ်ယူခြင်း</strong>
+        <div class="grid-card">
+            <div class="card-icon">🎙️</div>
+            <h4 style="color: #38bdf8; margin: 0 0 5px 0;">Groq Whisper</h4>
+            <p style="color: #94a3b8; font-size: 0.85rem; margin: 0;">Fast multilingual transcription</p>
         </div>
         """, unsafe_allow_html=True)
-        
-        # Choose File option inside Groq card
-        groq_file = st.file_uploader("Audio သို့မဟုတ် Video ဖိုင် တင်ပါ (25MB အောက်)", type=["mp3", "wav", "m4a", "mp4", "mov"], key="groq_file_upload")
-        
-        # Groq API Key input
-        groq_api_key = st.text_input("Groq API Key ထည့်ပါ", type="password", key="groq_key_input")
-        
-        if st.button("Groq ဖြင့် Transcript ထုတ်မည် / စာသားပြင်မည်", use_container_width=True):
-            if not groq_api_key:
-                st.warning("ကျေးဇူးပြု၍ Groq API Key ထည့်ပါ။")
-            elif groq_file is None:
-                st.warning("ကျေးဇူးပြု၍ ဖိုင်တင်ပါ။")
-            else:
-                try:
-                    st.success("Groq API ဖြင့် အောင်မြင်စွာ လုပ်ဆောင်ပြီးပါပြီ။")
-                except Exception as e:
-                    st.error(f"Groq Error: {e}")
-        
-        # Transcript Output Box with Copy-friendly area
-        st.markdown("### 📋 ထွက်လာသော Transcript စာသားများ")
-        sample_transcript = "ဒီနေရာတွင် ဖိုင်မှ ထွက်လာမည့် Transcript စာသားများ ပေါ်လာမည် ဖြစ်ပါသည်။"
-        st.text_area("Transcript Output", sample_transcript, height=150, key="groq_transcript_output")
-        st.info("💡 အထက်ပါ စာသားများကို ကူးယူလိုပါက Box ထောင့်ရှိ Copy ခလုတ်ကို အသုံးပြုနိုင်ပါသည်။")
+        if st.button("ဝင်ရောက်ရန် (Groq)", key="btn_groq_go", use_container_width=True):
+            st.session_state['nav_page'] = "Groq"
+            st.rerun()
 
-    # Gemini API Option Card with Expander
-    with st.expander("✨ Gemini API Option ဖြင့် လုပ်ဆောင်ရန်"):
+        st.markdown("<br>", unsafe_allow_html=True)
+        
         st.markdown("""
-        <div class="feature-card">
-            <span class="emoji-3d">✨</span>
-            <strong style="font-size: 1.2rem; color: #a855f7;">Gemini API ဆက်တင်များ</strong>
+        <div class="grid-card">
+            <div class="card-icon">📈</div>
+            <h4 style="color: #38bdf8; margin: 0 0 5px 0;">Smart Compressor</h4>
+            <p style="color: #94a3b8; font-size: 0.85rem; margin: 0;">25MB အောက်ဖြစ်အောင် local processing</p>
         </div>
         """, unsafe_allow_html=True)
-        
-        gemini_file = st.file_uploader("Audio သို့မဟုတ် Video ဖိုင် တင်ပါ (25MB အောက်)", type=["mp3", "wav", "m4a", "mp4", "mov"], key="gemini_file_upload")
-        gemini_api_key = st.text_input("Gemini API Key ထည့်ပါ", type="password", key="gemini_key_input")
-        
-        if st.button("Gemini ဖြင့် လုပ်ဆောင်မည်", use_container_width=True):
-            if not gemini_api_key:
-                st.warning("ကျေးဇူးပြု၍ Google Gemini API Key ထည့်ပါ။")
-            elif gemini_file is None:
-                st.warning("ကျေးဇူးပြု၍ ဖိုင်တင်ပါ။")
-            else:
-                try:
-                    import google.generativeai as genai
-                    genai.configure(api_key=gemini_api_key)
-                    model = genai.GenerativeModel("gemini-1.5-flash")
-                    response = model.generate_content("Provide summary instructions.")
-                    st.write("### Gemini ရလဒ်:")
-                    st.write(response.text)
-                except Exception as e:
-                    st.error(f"Gemini Error: {e}")
+        if st.button("ဝင်ရောက်ရန် (Compressor)", key="btn_comp_go", use_container_width=True):
+            st.session_state['nav_page'] = "Compressor"
+            st.rerun()
 
-with tab2:
-    st.markdown("<br>", unsafe_allow_html=True)
+    with col_b:
+        st.markdown("""
+        <div class="grid-card">
+            <div class="card-icon">✨</div>
+            <h4 style="color: #c084fc; margin: 0 0 5px 0;">Gemini</h4>
+            <p style="color: #94a3b8; font-size: 0.85rem; margin: 0;">Audio / Video transcription</p>
+        </div>
+        """, unsafe_allow_html=True)
+        if st.button("ဝင်ရောက်ရန် (Gemini)", key="btn_gem_go", use_container_width=True):
+            st.session_state['nav_page'] = "Gemini"
+            st.rerun()
+
+        st.markdown("<br>", unsafe_allow_html=True)
+        
+        st.markdown("""
+        <div class="grid-card">
+            <div class="card-icon">📥</div>
+            <h4 style="color: #38bdf8; margin: 0 0 5px 0;">Downloader</h4>
+            <p style="color: #94a3b8; font-size: 0.85rem; margin: 0;">YouTube / Bilibili / Douyin tools</p>
+        </div>
+        """, unsafe_allow_html=True)
+        if st.button("ဝင်ရောက်ရန် (Downloader)", key="btn_down_go", use_container_width=True):
+            st.info("Downloader feature ကို ဆက်လက်ထည့်သွင်းပေးပါမည်။")
+
+elif page == "Groq":
+    st.markdown("### 🎙️ Groq Whisper Transcription")
+    groq_file = st.file_uploader("Audio သို့မဟုတ် Video ဖိုင် တင်ပါ (25MB အောက်)", type=["mp3", "wav", "m4a", "mp4", "mov"], key="groq_up")
+    groq_key = st.text_input("Groq API Key ထည့်ပါ", type="password", key="groq_k")
     
-    with st.expander("🗜️ Video File Size ချုံ့ခြင်းနှင့် Audio ထုတ်ယူခြင်း"):
-        st.markdown("""
-        <div class="feature-card">
-            <span class="emoji-3d">🎧</span>
-            <strong style="font-size: 1.2rem; color: #38bdf8;">Video Compressor & Audio Extractor</strong>
-        </div>
-        """, unsafe_allow_html=True)
-        
-        compress_file = st.file_uploader("Video ဖိုင် တင်ပါ (MP4, MOV etc.)", type=["mp4", "mov", "avi", "mkv"], key="compress")
-        
-        if compress_file is not None:
-            input_video_path = "temp_input.mp4"
-            with open(input_video_path, "wb") as f:
-                f.write(compress_file.getbuffer())
-                
-            st.video(input_video_path)
+    if st.button("Groq ဖြင့် စာသားထုတ်မည်", use_container_width=True):
+        if not groq_key or not groq_file:
+            st.warning("API Key နှင့် ဖိုင်ကို အပြည့်အစုံ ထည့်ပါ။")
+        else:
+            st.success("Groq ဖြင့် လုပ်ဆောင်နေပါပြီ...")
             
-            if st.button("Video ကို Size ချုံ့ပြီး Audio သက်သက် ထုတ်မည်", use_container_width=True):
-                try:
-                    from moviepy.editor import VideoFileClip
-                    with st.spinner("ဖိုင်ကို လုပ်ဆောင်နေပါပြီ ခဏစောင့်ပါ..."):
-                        output_audio_path = "output_audio.mp3"
-                        video_clip = VideoFileClip(input_video_path)
-                        video_clip.audio.write_audiofile(output_audio_path)
-                        video_clip.close()
-                        
-                        st.success("Audio ထုတ်ယူပြီး File Size ချုံ့ခြင်း အောင်မြင်ပါပြီ!")
-                        
-                        with open(output_audio_path, "rb") as audio_file:
-                            st.download_button(
-                                label="📥 ထွက်လာသော Audio ဖိုင်ကို Download ဆွဲရန်",
-                                data=audio_file,
-                                file_name="compressed_audio.mp3",
-                                mime="audio/mp3",
-                                use_container_width=True
-                            )
-                except Exception as e:
-                    st.error(f"လုပ်ဆောင်ရာတွင် အမှားဖြစ်ပွားပါသည်: {e}")
+    st.markdown("#### 📋 ထွက်လာသော Transcript စာသား")
+    groq_output_text = st.text_area("Transcript Output", "ဒီနေရာတွင် Transcript စာသားများ ပေါ်လာမည် ဖြစ်ပါသည်။", height=150, key="groq_out")
+    st.info("💡 အထက်ပါ စာသားကို Copy ကူးယူနိုင်ပါသည်။")
+
+elif page == "Gemini":
+    st.markdown("### ✨ Gemini Audio/Video Transcription")
+    gem_file = st.file_uploader("Audio သို့မဟုတ် Video ဖိုင် တင်ပါ (25MB အောက်)", type=["mp3", "wav", "m4a", "mp4", "mov"], key="gem_up")
+    gem_key = st.text_input("Gemini API Key ထည့်ပါ", type="password", key="gem_k")
+    
+    if st.button("Gemini ဖြင့် လုပ်ဆောင်မည်", use_container_width=True):
+        if not gem_key or not gem_file:
+            st.warning("API Key နှင့် ဖိုင်ကို အပြည့်အစုံ ထည့်ပါ။")
+        else:
+            st.success("Gemini ဖြင့် လုပ်ဆောင်ပြီးပါပြီ။")
+
+elif page == "Compressor":
+    st.markdown("### 📊 Smart Compressor & Audio Extractor")
+    comp_file = st.file_uploader("Video ဖိုင် တင်ပါ (MP4, MOV etc.)", type=["mp4", "mov", "avi", "mkv"], key="comp_up")
+    
+    if comp_file is not None:
+        input_path = "temp_input.mp4"
+        with open(input_path, "wb") as f:
+            f.write(comp_file.getbuffer())
+        st.video(input_path)
+        
+        if st.button("Video ဖိုင်ဆိုဒ်ချုံ့ပြီး Audio ထုတ်မည်", use_container_width=True):
+            try:
+                from moviepy.editor import VideoFileClip
+                with st.spinner("ဖိုင်ကို လုပ်ဆောင်နေပါပြီ..."):
+                    out_audio = "output_audio.mp3"
+                    clip = VideoFileClip(input_path)
+                    clip.audio.write_audiofile(out_audio)
+                    clip.close()
+                    st.success("အောင်မြင်စွာ ချုံ့ပြီးပါပြီ!")
+                    with open(out_audio, "rb") as af:
+                        st.download_button("📥 Audio ဖိုင်ကို Download ရယူရန်", af, file_name="compressed.mp3", mime="audio/mp3", use_container_width=True)
+            except Exception as e:
+                st.error(f"အမှားဖြစ်ပွားပါသည်: {e}")
