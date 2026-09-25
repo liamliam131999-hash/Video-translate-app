@@ -117,13 +117,26 @@
             background: #30363d;
             color: #c9d1d9;
             border: none;
-            padding: 5px 10px;
-            border-radius: 4px;
+            padding: 6px 12px;
+            border-radius: 6px;
             cursor: pointer;
-            font-size: 11px;
+            font-size: 12px;
+            font-weight: bold;
             align-self: flex-end;
+            transition: background 0.2s;
         }
         .btn-copy:hover { background: #484f58; color: #fff; }
+
+        /* VPN Notice Style */
+        .vpn-notice {
+            font-size: 11px;
+            color: #e3b341;
+            background: #382c12;
+            padding: 6px 10px;
+            border-radius: 6px;
+            border-left: 3px solid #e3b341;
+            line-height: 1.4;
+        }
 
         .status-msg {
             font-size: 12px;
@@ -149,16 +162,15 @@
         <!-- 1. Groq Card -->
         <div class="card">
             <div class="card-header">
-                <span class="animated-logo">⚡</span> Groq AI Transcription
+                <span class="animated-logo">⚡</span> Groq Transcription
             </div>
-            <input type="password" id="groqKey" placeholder="Enter Groq API Key">
+            <input type="password" id="groqKey" placeholder="Enter Groq API Key" oninput="saveKey('groq')">
             
             <div class="file-drop-box">
                 <span id="groqFileName">Select File</span>
                 <input type="file" id="groqFile" accept="audio/*,video/*" onchange="updateFileName('groq')">
             </div>
 
-            <!-- Transcript လုပ်ရန် ခလုတ် (ဖိုင်ရွေးမှ ပေါ်မည်) -->
             <button class="btn-action" id="groqBtn" style="display:none;" onclick="transcribeGroq()">Transcript လုပ်ရန်</button>
             
             <textarea id="groqTranscript" placeholder="Transcript will appear here..." readonly></textarea>
@@ -168,16 +180,18 @@
         <!-- 2. Gemini Card -->
         <div class="card">
             <div class="card-header">
-                <span class="animated-logo">✨</span> Gemini AI Transcription
+                <span class="animated-logo">✨</span> Gemini Transcription
             </div>
-            <input type="password" id="geminiKey" placeholder="Enter Gemini API Key">
+            <input type="password" id="geminiKey" placeholder="Enter Gemini API Key" oninput="saveKey('gemini')">
             
+            <!-- VPN Notice -->
+            <div class="vpn-notice">⚠️ သတိပေးချက် - Gemini API သုံးပါက မဖြစ်မနေ VPN ခံသုံးပေးပါရန်။</div>
+
             <div class="file-drop-box">
                 <span id="geminiFileName">Select File</span>
                 <input type="file" id="geminiFile" accept="audio/*,video/*" onchange="updateFileName('gemini')">
             </div>
 
-            <!-- Transcript လုပ်ရန် ခလုတ် (ဖိုင်ရွေးမှ ပေါ်မည်) -->
             <button class="btn-action" id="geminiBtn" style="display:none;" onclick="transcribeGemini()">Transcript လုပ်ရန်</button>
             
             <textarea id="geminiTranscript" placeholder="Transcript will appear here..." readonly></textarea>
@@ -200,6 +214,22 @@
     </div>
 
     <script>
+        // Page Load ဖြစ်ချိန်တွင် သိမ်းထားပြီးသား API Key များကို ထည့်ပေးရန်
+        window.onload = function() {
+            if(localStorage.getItem('groq_key')) {
+                document.getElementById('groqKey').value = localStorage.getItem('groq_key');
+            }
+            if(localStorage.getItem('gemini_key')) {
+                document.getElementById('geminiKey').value = localStorage.getItem('gemini_key');
+            }
+        };
+
+        // API Key ကို LocalStorage သို့ အလိုအလျောက် သိမ်းဆည်းရန်
+        function saveKey(type) {
+            const keyValue = document.getElementById(type + 'Key').value.trim();
+            localStorage.setItem(type + '_key', keyValue);
+        }
+
         // File Name ပြောင်းလဲခြင်းနှင့် Transcript ခလုတ်ပေါ်လာစေရန်
         function updateFileName(type) {
             const fileInput = document.getElementById(type + 'File');
@@ -208,7 +238,7 @@
 
             if (fileInput.files && fileInput.files[0]) {
                 fileNameSpan.innerText = fileInput.files[0].name;
-                actionBtn.style.display = "block"; // ခလုတ်ပေါ်လာစေရန်
+                actionBtn.style.display = "block";
             }
         }
 
@@ -264,7 +294,7 @@
             if (!apiKey) { alert("ကျေးဇူးပြု၍ Gemini API Key ထည့်ပါ။"); return; }
             if (!fileInput) { alert("ကျေးဇူးပြု၍ ဖိုင်တစ်ခု ရွေးချယ်ပါ။"); return; }
 
-            transcriptBox.value = "Processing with Gemini...";
+            transcriptBox.value = "Processing with Gemini (Ensure VPN is on)...";
             
             const reader = new FileReader();
             reader.readAsDataURL(fileInput);
@@ -290,7 +320,7 @@
                         const text = data.candidates?.[0]?.content?.parts?.[0]?.text || "No text returned";
                         transcriptBox.value = text;
                     } else {
-                        transcriptBox.value = "Error: " + (data.error?.message || "Failed");
+                        transcriptBox.value = "Error: " + (data.error?.message || "Failed (Check VPN or Key)");
                     }
                 } catch (err) {
                     transcriptBox.value = "Network Error: " + err.message;
