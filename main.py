@@ -3,7 +3,7 @@ import streamlit as st
 
 st.set_page_config(page_title="My Transcriber", layout="wide")
 
-# Custom CSS for Dark Modern App UI matching your screenshot
+# Custom CSS for Dark Modern App UI and Side-by-Side Cards
 st.markdown("""
 <style>
     .stApp {
@@ -15,46 +15,39 @@ st.markdown("""
     .header-card {
         background: linear-gradient(135deg, #0f172a 100%, #1e293b 0%);
         border: 1px solid #1e293b;
-        padding: 24px;
+        padding: 20px;
         border-radius: 20px;
         box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.5);
         text-align: center;
-        margin-bottom: 20px;
+        margin-bottom: 15px;
     }
     
     /* Notice Warning Box */
     .notice-box {
         background-color: rgba(234, 179, 8, 0.08);
         border: 1px solid rgba(234, 179, 8, 0.2);
-        padding: 10px 15px;
+        padding: 8px 12px;
         border-radius: 12px;
         color: #fbbf24;
-        font-size: 0.9rem;
-        margin-top: 15px;
+        font-size: 0.85rem;
+        margin-top: 10px;
     }
 
     /* Grid Feature Cards */
     .grid-card {
         background: linear-gradient(145deg, #0f172a 0%, #0b0f19 100%);
         border: 1px solid #1e293b;
-        padding: 20px;
+        padding: 18px;
         border-radius: 18px;
         box-shadow: 0 8px 20px rgba(0, 0, 0, 0.4);
-        margin-bottom: 20px;
-        transition: all 0.3s ease;
-        min-height: 160px;
+        margin-bottom: 10px;
+        min-height: 140px;
+        text-align: center;
     }
     
-    .grid-card:hover {
-        border-color: #38bdf8;
-        transform: translateY(-3px);
-    }
-
-    /* Floating / Glow Emojis */
     .card-icon {
-        font-size: 2.2rem;
-        margin-bottom: 10px;
-        display: inline-block;
+        font-size: 2rem;
+        margin-bottom: 8px;
     }
 </style>
 """, unsafe_allow_html=True)
@@ -62,11 +55,11 @@ st.markdown("""
 # App Header Section
 st.markdown("""
 <div class="header-card">
-    <div style="font-size: 2.5rem;">⚡</div>
-    <h2 style="color: #38bdf8; margin: 5px 0 5px 0;">My Transcriber</h2>
-    <p style="color: #64748b; font-size: 0.85rem; letter-spacing: 1px;">Audio • Video • Transcript • Compressor</p>
+    <div style="font-size: 2.2rem;">⚡</div>
+    <h2 style="color: #38bdf8; margin: 5px 0 2px 0;">My Transcriber</h2>
+    <p style="color: #64748b; font-size: 0.8rem; letter-spacing: 1px;">Audio • Video • Transcript • Compressor</p>
     <div class="notice-box">
-        ⚠️ Groq / Gemini သို့ တိုက်ရိုက်တင်မည့်ဖိုင်သည် 25MB အောက် ဖြစ်ရပါမည်။
+        ⚠️ တိုက်ရိုက်တင်မည့်ဖိုင်သည် 25MB အောက် ဖြစ်ရပါမည်။
     </div>
 </div>
 """, unsafe_allow_html=True)
@@ -75,19 +68,19 @@ st.markdown("""
 if 'nav_page' not in st.session_state:
     st.session_state['nav_page'] = "Home"
 
-# Navigation Menu Bar (Using columns as buttons)
+# Navigation Menu Bar (Home, Groq, Gemini, Compressor)
 nav_col1, nav_col2, nav_col3, nav_col4 = st.columns(4)
 with nav_col1:
     if st.button("🏠 Home", use_container_width=True):
         st.session_state['nav_page'] = "Home"
 with nav_col2:
-    if st.button("⚡ Groq", use_container_width=True):
+    if st.button("🎙️ Groq", use_container_width=True):
         st.session_state['nav_page'] = "Groq"
 with nav_col3:
     if st.button("✨ Gemini", use_container_width=True):
         st.session_state['nav_page'] = "Gemini"
 with nav_col4:
-    if st.button("📊 Compressor", use_container_width=True):
+    if st.button("📊 Comp", use_container_width=True):
         st.session_state['nav_page'] = "Compressor"
 
 st.divider()
@@ -96,18 +89,18 @@ st.divider()
 page = st.session_state['nav_page']
 
 if page == "Home":
-    # Grid Layout like the screenshot
+    # Side-by-side layout (2 columns per row) for clean compact look
     col_a, col_b = st.columns(2)
     
     with col_a:
         st.markdown("""
         <div class="grid-card">
             <div class="card-icon">🎙️</div>
-            <h4 style="color: #38bdf8; margin: 0 0 5px 0;">Groq Whisper</h4>
-            <p style="color: #94a3b8; font-size: 0.85rem; margin: 0;">Fast multilingual transcription</p>
+            <h4 style="color: #38bdf8; margin: 0 0 5px 0; font-size: 1rem;">Groq Whisper</h4>
+            <p style="color: #94a3b8; font-size: 0.75rem; margin: 0;">Fast transcription</p>
         </div>
         """, unsafe_allow_html=True)
-        if st.button("ဝင်ရောက်ရန် (Groq)", key="btn_groq_go", use_container_width=True):
+        if st.button("ဝင်ရန် (Groq)", key="btn_groq_go", use_container_width=True):
             st.session_state['nav_page'] = "Groq"
             st.rerun()
 
@@ -116,11 +109,11 @@ if page == "Home":
         st.markdown("""
         <div class="grid-card">
             <div class="card-icon">📈</div>
-            <h4 style="color: #38bdf8; margin: 0 0 5px 0;">Smart Compressor</h4>
-            <p style="color: #94a3b8; font-size: 0.85rem; margin: 0;">25MB အောက်ဖြစ်အောင် local processing</p>
+            <h4 style="color: #38bdf8; margin: 0 0 5px 0; font-size: 1rem;">Compressor</h4>
+            <p style="color: #94a3b8; font-size: 0.75rem; margin: 0;">25MB local sizing</p>
         </div>
         """, unsafe_allow_html=True)
-        if st.button("ဝင်ရောက်ရန် (Compressor)", key="btn_comp_go", use_container_width=True):
+        if st.button("ဝင်ရန် (Compressor)", key="btn_comp_go", use_container_width=True):
             st.session_state['nav_page'] = "Compressor"
             st.rerun()
 
@@ -128,25 +121,13 @@ if page == "Home":
         st.markdown("""
         <div class="grid-card">
             <div class="card-icon">✨</div>
-            <h4 style="color: #c084fc; margin: 0 0 5px 0;">Gemini</h4>
-            <p style="color: #94a3b8; font-size: 0.85rem; margin: 0;">Audio / Video transcription</p>
+            <h4 style="color: #c084fc; margin: 0 0 5px 0; font-size: 1rem;">Gemini AI</h4>
+            <p style="color: #94a3b8; font-size: 0.75rem; margin: 0;">Audio/Video text</p>
         </div>
         """, unsafe_allow_html=True)
-        if st.button("ဝင်ရောက်ရန် (Gemini)", key="btn_gem_go", use_container_width=True):
+        if st.button("ဝင်ရန် (Gemini)", key="btn_gem_go", use_container_width=True):
             st.session_state['nav_page'] = "Gemini"
             st.rerun()
-
-        st.markdown("<br>", unsafe_allow_html=True)
-        
-        st.markdown("""
-        <div class="grid-card">
-            <div class="card-icon">📥</div>
-            <h4 style="color: #38bdf8; margin: 0 0 5px 0;">Downloader</h4>
-            <p style="color: #94a3b8; font-size: 0.85rem; margin: 0;">YouTube / Bilibili / Douyin tools</p>
-        </div>
-        """, unsafe_allow_html=True)
-        if st.button("ဝင်ရောက်ရန် (Downloader)", key="btn_down_go", use_container_width=True):
-            st.info("Downloader feature ကို ဆက်လက်ထည့်သွင်းပေးပါမည်။")
 
 elif page == "Groq":
     st.markdown("### 🎙️ Groq Whisper Transcription")
@@ -160,7 +141,7 @@ elif page == "Groq":
             st.success("Groq ဖြင့် လုပ်ဆောင်နေပါပြီ...")
             
     st.markdown("#### 📋 ထွက်လာသော Transcript စာသား")
-    groq_output_text = st.text_area("Transcript Output", "ဒီနေရာတွင် Transcript စာသားများ ပေါ်လာမည် ဖြစ်ပါသည်။", height=150, key="groq_out")
+    st.text_area("Transcript Output", "ဒီနေရာတွင် Transcript စာသားများ ပေါ်လာမည် ဖြစ်ပါသည်။", height=150, key="groq_out")
     st.info("💡 အထက်ပါ စာသားကို Copy ကူးယူနိုင်ပါသည်။")
 
 elif page == "Gemini":
