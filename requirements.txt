@@ -3,4 +3,4 @@ youtube-transcript-api
 groq
 google-generativeai
 moviepy
-yt_dlp
+yt-dlp
