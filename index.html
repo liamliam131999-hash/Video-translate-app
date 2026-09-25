@@ -8,6 +8,10 @@
 <!-- ADSTERRA SOCIAL BAR SCRIPT -->
 <script src="https://pl31506664.profitableratecpmnetwork.com/4b/ab/1d/4bab1dd00261d70b10debabe3cb34fbc.js"></script>
 
+<!-- FFMPEG.WASM SCRIPTS FOR REAL COMPRESSION -->
+<script src="https://unpkg.com/@ffmpeg/ffmpeg@0.12.10/dist/umd/ffmpeg.js"></script>
+<script src="https://unpkg.com/@ffmpeg/util@0.12.1/dist/umd/index.js"></script>
+
 <style>
 *{
     box-sizing:border-box;
@@ -2137,7 +2141,7 @@ async function transcribeGemini(){
 
 
 /* ================================================= */
-/*                  COMPRESSOR                       */
+/*                  COMPRESSOR (REAL)                */
 /* ================================================= */
 
 let selectedCompressFile = null;
@@ -2208,7 +2212,7 @@ function handleCompress(input){
 
 
             statusDiv.innerText =
-                `⚠️ ${fileSizeMB.toFixed(2)} MB ဖြစ်ပါတယ်။ 25MB အောက်သို့ချုံ့ရန် ခလုတ်ကို နှိပ်ပါ။`;
+                `⚠️ ${fileSizeMB.toFixed(2)} MB ဖြစ်ပါတယ်။ 25MB အောက်သို့ တကယ်ချုံ့ရန် ခလုတ်ကို နှိပ်ပါ။`;
 
             compressBtn.style.display =
                 "block";
@@ -2228,7 +2232,7 @@ function handleCompress(input){
 }
 
 
-function startCompression(){
+async function startCompression(){
 
     const statusDiv =
         document.getElementById(
@@ -2238,6 +2242,11 @@ function startCompression(){
     const compressBtn =
         document.getElementById(
             "compressBtn"
+        );
+
+    const audioPlayer =
+        document.getElementById(
+            "audioPlayer"
         );
 
 
@@ -2255,24 +2264,61 @@ function startCompression(){
         </span>
     `;
 
+    statusDiv.style.display = "block";
+    statusDiv.className = "status-msg";
+    statusDiv.innerText = "⏳ ဖိုင်ကို စတင်ချုံ့နေပါပြီ (ခဏစောင့်ပါ)...";
 
-    setTimeout(() => {
+
+    try {
+
+        const { FFmpeg } = FFmpegWASM;
+        const ffmpeg = new FFmpeg();
+
+        const baseURL = 'https://unpkg.com/@ffmpeg/core@0.12.6/dist/umd';
+        await ffmpeg.load({
+            coreURL: await toBlobURL(`${baseURL}/ffmpeg-core.js`, 'text/javascript'),
+            wasmURL: await toBlobURL(`${baseURL}/ffmpeg-core.wasm`, 'application/wasm'),
+        });
+
+        const inputName = 'input_file';
+        const outputName = 'output_compressed.mp3';
+
+        const fileData = await selectedCompressFile.arrayBuffer();
+        await ffmpeg.writeFile(inputName, new Uint8Array(fileData));
+
+        // FFmpeg command to reduce size (Audio bitrate 64k)
+        await ffmpeg.exec(['-i', inputName, '-b:a', '64k', outputName]);
+
+        const data = await ffmpeg.readFile(outputName);
+        const compressedBlob = new Blob([data.buffer], { type: 'audio/mp3' });
+        const compressedSizeMB = compressedBlob.size / (1024 * 1024);
+
+        const compressedUrl = URL.createObjectURL(compressedBlob);
+        audioPlayer.src = compressedUrl;
 
         statusDiv.className =
             "status-msg success";
 
         statusDiv.innerText =
-            "✓ ဖိုင်ဆိုဒ်ချုံ့ခြင်း ပြီးမြောက်ပါပြီ! (25MB အောက်သို့ ရောက်ရှိပါပြီ)";
+            `✓ ဖိုင်ဆိုဒ်ချုံ့ခြင်း ပြီးမြောက်ပါပြီ! (ယခုဆိုဒ်မှာ ${compressedSizeMB.toFixed(2)} MB သို့ ရောက်ရှိသွားပါပြီ)`;
 
         compressBtn.style.display =
             "none";
+
+    } catch (error) {
+
+        statusDiv.className =
+            "status-msg";
+
+        statusDiv.innerText =
+            "❌ ချုံ့ရာတွင် အမှားအယွင်းရှိပါသည်: " + error.message;
 
         compressBtn.disabled = false;
 
         compressBtn.innerText =
             "🗜️ COMPRESS FILE";
 
-    }, 2000);
+    }
 
 }
 
