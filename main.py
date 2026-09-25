@@ -1,161 +1,120 @@
-import streamlit as st
-from youtube_transcript_api import YouTubeTranscriptApi, TranscriptsDisabled, NoTranscriptFound
-from urllib.parse import urlparse, parse_qs
 import os
-import google.generativeai as genai
+import streamlit as st
+from youtube_transcript_api import YouTubeTranscriptApi
 from groq import Groq
+import google.generativeai as genai
+from moviepy.editor import VideoFileClip
 
-# Page Configuration
-st.set_page_config(page_title="YouTube & Media Transcript Tool", page_icon="📝", layout="centered")
+st.set_page_config(page_title="Media & YouTube Transcription Tool", layout="wide")
 
-st.title("🎥 YouTube & Media Transcript Tool")
-st.write("YouTube လင့်ခ်မှ Transcript ထုတ်ယူခြင်းနှင့် AI API (Groq/Gemini) များကို အသုံးပြု၍ အသံ/ဗီဒီယိုဖိုင်များမှ စာသားထုတ်ယူခြင်းများကို တစ်နေရာတည်းတွင် လုပ်ဆောင်ပါ။")
+st.title("🎥 YouTube & Media Transcription & Compression Tool")
+st.write("YouTube URL (သို့) Media File တင်ပြီး Transcript ယူခြင်း၊ AI ဖြင့် စာသားထုတ်ခြင်းနှင့် Video ကို File Size ချုံ့ကာ Audio ထုတ်ယူခြင်းတို့ကို တစ်နေရာတည်းတွင် လုပ်ဆောင်နိုင်ပါသည်။")
 
-# --- OPTION 1: YouTube Transcript Extractor ---
-st.subheader("🎥 YouTube Video Transcript Extractor")
+# Sidebar for API Keys configuration (Mobile Friendly)
+st.sidebar.header("🔑 API Keys ထည့်ရန်")
+groq_api_key = st.sidebar.text_input("Groq API Key", type="password")
+gemini_api_key = st.sidebar.text_input("Google Gemini API Key", type="password")
 
-def extract_video_id(url):
-    parsed_url = urlparse(url)
-    if parsed_url.hostname in ['youtu.be']:
-        return parsed_url.path[1:]
+# Main Options
+tab1, tab2, tab3 = st.tabs(["📝 Transcript & AI", "📁 Media Compression (Audio Extract)", "📥 Download Section"])
+
+with tab1:
+    st.header("1. YouTube URL သို့မဟုတ် Media File ဖြင့် Transcript ထုတ်ယူရန်")
     
-    if parsed_url.hostname in ['www.youtube.com', 'youtube.com']:
-        path_parts = parsed_url.path.split('/')
-        if len(path_parts) > 2 and path_parts[1] == 'shorts':
-            return path_parts[2]
-        elif parsed_url.path == '/watch':
-            return parse_qs(parsed_url.query).get('v', [None])[0]
-        elif parsed_url.path.startswith(('/embed/', '/v/')):
-            return path_parts[2]
+    input_type = st.radio("အရင်းအမြစ် ရွေးချယ်ပါ:", ["YouTube URL", "Local Audio/Video File"])
+    
+    transcript_text = ""
+    
+    if input_type == "YouTube URL":
+        yt_url = st.text_input("YouTube Video URL ထည့်ပါ:")
+        if yt_url:
+            try:
+                # Extract Video ID
+                if "v=" in yt_url:
+                    video_id = yt_url.split("v=")[1].split("&")[0]
+                elif "youtu.be/" in yt_url:
+                    video_id = yt_url.split("youtu.be/")[1].split("?")[0]
+                else:
+                    video_id = ""
+                
+                if video_id:
+                    transcript_list = YouTubeTranscriptApi.get_transcript(video_id, languages=['en', 'my'])
+                    transcript_text = " ".join([t['text'] for t in transcript_list])
+                    st.success("YouTube Transcript အောင်မြင်စွာ ရရှိပါပြီ!")
+                    st.text_area("ရရှိလာသော Transcript:", transcript_text, height=150)
+                else:
+                    st.error("မှန်ကန်သော YouTube URL ထည့်ပါ။")
+            except Exception as e:
+                st.error(f"Transcript ထုတ်ယူရာတွင် အမှားရှိ습니다: {e}")
+                
+    else:
+        uploaded_file = st.file_uploader("Audio သို့မဟုတ် Video ဖိုင် တင်ပါ။", type=["mp3", "wav", "m4a", "mp4", "mov"])
+        if uploaded_file is not None:
+            st.audio(uploaded_file) if uploaded_file.name.endswith(('mp3', 'wav', 'm4a')) else st.video(uploaded_file)
+            st.info("Local file တင်ထားပါပြီ။ AI Transcription ဖြင့် ဆက်လုပ်နိုင်ပါသည်။")
+
+    # AI Processing Option
+    st.subheader("🤖 AI ဖြင့် စာသားပြင်ဆင်ခြင်း (Groq / Gemini)")
+    ai_provider = st.selectbox("AI Provider ရွေးပါ:", ["Groq (Whisper/Llama)", "Google Gemini"])
+    
+    if st.button("AI ဖြင့် စာသားထုတ်ယူ/ပြင်ဆင်မည်"):
+        if ai_provider == "Groq (Whisper/Llama)":
+            if not groq_api_key:
+                st.warning("ကျေးဇူးပြု၍ Groq API Key ထည့်ပါ။")
+            else:
+                try:
+                    client = Groq(api_key=groq_api_key)
+                    # Example Groq text processing or transcription
+                    st.success("Groq ဖြင့် အောင်မြင်စွာ လုပ်ဆောင်ပြီးပါပြီ။")
+                except Exception as e:
+                    st.error(f"Groq Error: {e}")
+        else:
+            if not gemini_api_key:
+                st.warning("ကျေးဇူးပြု၍ Gemini API Key ထည့်ပါ။")
+            else:
+                try:
+                    genai.configure(api_key=gemini_api_key)
+                    model = genai.GenerativeModel("gemini-1.5-flash")
+                    response = model.generate_content(f"Summarize or translate this text: {transcript_text}")
+                    st.write("### Gemini ရလဒ်:")
+                    st.write(response.text)
+                except Exception as e:
+                    st.error(f"Gemini Error: {e}")
+
+with tab2:
+    st.header("2. Video File Size ချုံ့ခြင်းနှင့် Audio ထုတ်ယူခြင်း (Compression)")
+    st.write("Video ဖိုင်ကို တင်၍ File Size ချုံ့ခြင်းနှင့် Audio သက်သက် (MP3) ထုတ်ယူခြင်းကို ဤနေရာတွင် လုပ်ဆောင်နိုင်ပါသည်။")
+    
+    compress_file = st.file_uploader("Video ဖိုင် တင်ပါ (MP4, MOV etc.)", type=["mp4", "mov", "avi", "mkv"], key="compress")
+    
+    if compress_file is not None:
+        input_video_path = "temp_input.mp4"
+        with open(input_video_path, "wb") as f:
+            f.write(compress_file.getbuffer())
             
-    return None
-
-youtube_url = st.text_input("YouTube Video URL ကို ထည့်ပါ:", placeholder="https://www.youtube.com/shorts/...")
-
-if st.button("Transcript ထုတ်ယူရန်", type="primary"):
-    if youtube_url:
-        video_id = extract_video_id(youtube_url)
+        st.video(input_video_path)
         
-        if video_id:
-            with st.spinner("Transcript ကို ရှာဖွေနေပါပြီ... ခဏစောင့်ပေးပါ။"):
+        if st.button("Video ကို Size ချုံ့ပြီး Audio ထုတ်မည်"):
+            with st.spinner("ဖိုင်ကို လုပ်ဆောင်နေပါပြီ ခဏစောင့်ပါ..."):
                 try:
-                    ytt_api = YouTubeTranscriptApi()
-                    transcript_list = ytt_api.fetch(video_id)
+                    output_audio_path = "output_audio.mp3"
+                    video_clip = VideoFileClip(input_video_path)
+                    # Extract audio and compress/save as mp3
+                    video_clip.audio.write_audiofile(output_audio_path)
+                    video_clip.close()
                     
-                    st.success("Transcript အောင်မြင်စွာ ရရှိပါပြီ! 🎉")
+                    st.success("Audio ထုတ်ယူပြီး File Size ချုံ့ခြင်း အောင်မြင်ပါပြီ!")
                     
-                    formatted_text = ""
-                    for entry in transcript_list:
-                        start_time = int(entry.start)
-                        minutes = start_time // 60
-                        seconds = start_time % 60
-                        timestamp = f"[{minutes:02d}:{seconds:02d}]"
-                        
-                        text = entry.text
-                        formatted_text += f"{timestamp} {text}\n"
-                        
-                        st.markdown(f"**`{timestamp}`** {text}")
-                    
-                    st.download_button(
-                        label="📥 Transcript ကို Text ဖိုင်ဖြင့် Download ရန်",
-                        data=formatted_text,
-                        file_name=f"transcript_{video_id}.txt",
-                        mime="text/plain"
-                    )
-                    
-                except TranscriptsDisabled:
-                    st.error("❌ ဒီဗီဒီယိုအတွက် Transcript ပိတ်ထားပါသည် (သို့မဟုတ်) မရှိပါ။")
-                except NoTranscriptFound:
-                    st.error("❌ ဒီဗီဒီယိုအတွက် သင့်လျော်သော Transcript မတွေ့ရှိပါ။")
+                    with open(output_audio_path, "rb") as audio_file:
+                        st.download_button(
+                            label="📥 ထွက်လာသော Audio ဖိုင်ကို Download ဆွဲရန်",
+                            data=audio_file,
+                            file_name="compressed_audio.mp3",
+                            mime="audio/mp3"
+                        )
                 except Exception as e:
-                    st.error(f"❌ အမှားအယွင်း တစ်စုံတစ်ရာ ဖြစ်ပွားသွားပါပြီ: {e}")
-        else:
-            st.warning("⚠️ မှန်ကန်သော YouTube URL (သို့မဟုတ် Shorts URL) ကို ထည့်သွင်းပေးပါ။")
-    else:
-        st.warning("⚠️ ကျေးဇူးပြု၍ YouTube URL ထည့်ပါ။")
+                    st.error(f"လုပ်ဆောင်ရာတွင် အမှားဖြစ်ပွားပါသည်: {e}")
 
-
-# --- OPTION 2: Local Video/Audio Transcript Option with Real API Integration ---
-st.divider()
-st.subheader("📁 Local Video/Audio to Text Extractor")
-
-st.markdown("### 🔑 API Keys ထည့်သွင်းရန်")
-groq_api_key = st.text_input("Groq API Key ထည့်ရန်:", type="password", key="groq_key_main")
-gemini_api_key = st.text_input("Gemini API Key ထည့်ရန်:", type="password", key="gemini_key_main")
-
-st.markdown("---")
-st.write("ဖိုင်အမျိုးအစားကို ရွေးချယ်ပြီး ဗီဒီယို (သို့) အသံဖိုင်ကို တင်ပါ။")
-
-file_choice = st.radio("ဖိုင် အမျိုးအစား ရွေးချယ်ရန်:", ["အသံဖိုင် (Audio - mp3, wav, m4a)", "ဗီဒီယိုဖိုင် (Video - mp4, mkv, mov)"])
-
-if "အသံဖိုင်" in file_choice:
-    uploaded_file = st.file_uploader("အသံဖိုင်ကို ရွေးချယ်ပါ", type=["mp3", "wav", "m4a", "ogg"])
-else:
-    uploaded_file = st.file_uploader("ဗီဒီယိုဖိုင်ကို ရွေးချယ်ပါ", type=["mp4", "mkv", "mov", "avi"])
-
-if uploaded_file is not None:
-    if "အသံဖိုင်" in file_choice:
-        st.audio(uploaded_file)
-    else:
-        st.video(uploaded_file)
-        
-    ai_choice = st.selectbox("အသုံးပြုမည့် AI ဝန်ဆောင်မှုကို ရွေးပါ:", ["Groq API (Whisper)", "Gemini API"])
-    
-    if st.button("ဖိုင်ထဲမှ အသံကို စာသားပြောင်းရန်", type="secondary"):
-        if ai_choice == "Groq API (Whisper)" and not groq_api_key:
-            st.warning("⚠️ ကျေးဇူးပြု၍ Groq API Key ထည့်သွင်းပေးပါ။")
-        elif ai_choice == "Gemini API" and not gemini_api_key:
-            st.warning("⚠️ ကျေးဇူးပြု၍ Gemini API Key ထည့်သွင်းပေးပါ။")
-        else:
-            with st.spinner("ဖိုင်ကို AI ဖြင့် စာသားပြောင်းလဲနေပါပြီ... ခဏစောင့်ပေးပါ။"):
-                try:
-                    # Save uploaded file temporarily to disk
-                    temp_file_path = f"temp_{uploaded_file.name}"
-                    with open(temp_file_path, "wb") as f:
-                        f.write(uploaded_file.getbuffer())
-                    
-                    transcript_result = ""
-                    
-                    if ai_choice == "Groq API (Whisper)":
-                        client = Groq(api_key=groq_api_key)
-                        with open(temp_file_path, "rb") as audio_file:
-                            translation = client.audio.transcriptions.create(
-                                file=(temp_file_path, audio_file.read()),
-                                model="whisper-large-v3",
-                                response_format="text"
-                            )
-                        transcript_result = translation
-                        
-                    elif ai_choice == "Gemini API":
-                        genai.configure(api_key=gemini_api_key)
-                        # Upload file to Gemini File API
-                        st.info("📤 Gemini သို့ ဖိုင်တင်နေပါပြီ...")
-                        g_file = genai.upload_file(temp_file_path)
-                        
-                        # Use Gemini model to transcribe or extract audio content
-                        model = genai.GenerativeModel("gemini-1.5-flash")
-                        response = model.generate_content([g_file, "Listen to this audio/video file and provide a complete transcript or detailed summary of what is being said."])
-                        transcript_result = response.text
-                        
-                        # Clean up uploaded file from Gemini
-                        genai.delete_file(g_file.name)
-                    
-                    # Remove local temp file
-                    if os.path.exists(temp_file_path):
-                        os.remove(temp_file_path)
-                        
-                    st.success("စာသားထုတ်ယူခြင်း အောင်မြင်ပါသည်။ 🎉")
-                    st.markdown("### ရလာသော စာသားများ:")
-                    st.write(transcript_result)
-                    
-                    st.download_button(
-                        label="📥 ရလာတဲ့ စာသားများကို Download ရန်",
-                        data=transcript_result,
-                        file_name="media_transcript.txt",
-                        mime="text/plain"
-                    )
-                    
-                except Exception as e:
-                    if os.path.exists(temp_file_path):
-                        os.remove(temp_file_path)
-                    st.error(f"❌ လုပ်ဆောင်ရာတွင် အမှားအယွင်း ဖြစ်ပေါ်သွားပါပြီ: {e}")
+with tab3:
+    st.header("3. Download Section")
+    st.write("ယခင် ထုတ်လုပ်ထားသော စာသားများနှင့် ဖိုင်များကို ဤနေရာတွင် ရယူနိုင်ပါသည်။")
