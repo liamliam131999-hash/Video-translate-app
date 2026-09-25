@@ -1,6 +1,6 @@
 streamlit
+youtube-transcript-api
 groq
 google-generativeai
-yt-dlp
-streamlit
 moviepy
+yt_dlp
