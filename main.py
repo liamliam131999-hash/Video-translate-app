@@ -3,7 +3,17 @@ import streamlit as st
 from youtube_transcript_api import YouTubeTranscriptApi
 from groq import Groq
 import google.generativeai as genai
-from moviepy.editor import VideoFileClip
+
+# Try importing moviepy safely to prevent crashes
+try:
+    from moviepy.editor import VideoFileClip
+    MOVIEPY_AVAILABLE = True
+except ImportError:
+    try:
+        from moviepy import VideoFileClip
+        MOVIEPY_AVAILABLE = True
+    except ImportError:
+        MOVIEPY_AVAILABLE = False
 
 st.set_page_config(page_title="Media & YouTube Transcription Tool", layout="wide")
 
@@ -45,12 +55,15 @@ with tab1:
                 else:
                     st.error("မှန်ကန်သော YouTube URL ထည့်ပါ။")
             except Exception as e:
-                st.error(f"Transcript ထုတ်ယူရာတွင် အမှားရှိ습니다: {e}")
+                st.error(f"Transcript ထုတ်ယူရာတွင် အမှားရှိပါသည်: {e}")
                 
     else:
         uploaded_file = st.file_uploader("Audio သို့မဟုတ် Video ဖိုင် တင်ပါ။", type=["mp3", "wav", "m4a", "mp4", "mov"])
         if uploaded_file is not None:
-            st.audio(uploaded_file) if uploaded_file.name.endswith(('mp3', 'wav', 'm4a')) else st.video(uploaded_file)
+            if uploaded_file.name.endswith(('mp3', 'wav', 'm4a')):
+                st.audio(uploaded_file)
+            else:
+                st.video(uploaded_file)
             st.info("Local file တင်ထားပါပြီ။ AI Transcription ဖြင့် ဆက်လုပ်နိုင်ပါသည်။")
 
     # AI Processing Option
@@ -64,7 +77,6 @@ with tab1:
             else:
                 try:
                     client = Groq(api_key=groq_api_key)
-                    # Example Groq text processing or transcription
                     st.success("Groq ဖြင့် အောင်မြင်စွာ လုပ်ဆောင်ပြီးပါပြီ။")
                 except Exception as e:
                     st.error(f"Groq Error: {e}")
@@ -95,25 +107,27 @@ with tab2:
         st.video(input_video_path)
         
         if st.button("Video ကို Size ချုံ့ပြီး Audio ထုတ်မည်"):
-            with st.spinner("ဖိုင်ကို လုပ်ဆောင်နေပါပြီ ခဏစောင့်ပါ..."):
-                try:
-                    output_audio_path = "output_audio.mp3"
-                    video_clip = VideoFileClip(input_video_path)
-                    # Extract audio and compress/save as mp3
-                    video_clip.audio.write_audiofile(output_audio_path)
-                    video_clip.close()
-                    
-                    st.success("Audio ထုတ်ယူပြီး File Size ချုံ့ခြင်း အောင်မြင်ပါပြီ!")
-                    
-                    with open(output_audio_path, "rb") as audio_file:
-                        st.download_button(
-                            label="📥 ထွက်လာသော Audio ဖိုင်ကို Download ဆွဲရန်",
-                            data=audio_file,
-                            file_name="compressed_audio.mp3",
-                            mime="audio/mp3"
-                        )
-                except Exception as e:
-                    st.error(f"လုပ်ဆောင်ရာတွင် အမှားဖြစ်ပွားပါသည်: {e}")
+            if not MOVIEPY_AVAILABLE:
+                st.error("Server ပေါ်တွင် moviepy လိုက်ဘရီ အလုပ်မလုပ်သေးပါ။ ကျေးဇူးပြု၍ requirements.txt တွင် moviepy ပါဝင်ကြောင်း စစ်ဆေးပါ။")
+            else:
+                with st.spinner("ဖိုင်ကို လုပ်ဆောင်နေပါပြီ ခဏစောင့်ပါ..."):
+                    try:
+                        output_audio_path = "output_audio.mp3"
+                        video_clip = VideoFileClip(input_video_path)
+                        video_clip.audio.write_audiofile(output_audio_path)
+                        video_clip.close()
+                        
+                        st.success("Audio ထုတ်ယူပြီး File Size ချုံ့ခြင်း အောင်မြင်ပါပြီ!")
+                        
+                        with open(output_audio_path, "rb") as audio_file:
+                            st.download_button(
+                                label="📥 ထွက်လာသော Audio ဖိုင်ကို Download ဆွဲရန်",
+                                data=audio_file,
+                                file_name="compressed_audio.mp3",
+                                mime="audio/mp3"
+                            )
+                    except Exception as e:
+                        st.error(f"လုပ်ဆောင်ရာတွင် အမှားဖြစ်ပွားပါသည်: {e}")
 
 with tab3:
     st.header("3. Download Section")
