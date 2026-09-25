@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>AI Transcription & Media Compressor</title>
+    <title>AI Transcription & Compressor</title>
     <style>
         * { box-sizing: border-box; margin: 0; padding: 0; font-family: sans-serif; }
         body { background-color: #0d1117; padding: 15px; color: #c9d1d9; }
@@ -113,6 +113,18 @@
         }
         .btn-action:hover { background: #2ea043; }
 
+        .btn-copy {
+            background: #30363d;
+            color: #c9d1d9;
+            border: none;
+            padding: 5px 10px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 11px;
+            align-self: flex-end;
+        }
+        .btn-copy:hover { background: #484f58; color: #fff; }
+
         .status-msg {
             font-size: 12px;
             color: #f85149;
@@ -137,29 +149,39 @@
         <!-- 1. Groq Card -->
         <div class="card">
             <div class="card-header">
-                <span class="animated-logo">⚡</span> Groq Transcription
+                <span class="animated-logo">⚡</span> Groq AI Transcription
             </div>
             <input type="password" id="groqKey" placeholder="Enter Groq API Key">
+            
             <div class="file-drop-box">
-                <span id="groqFileName">Select File (Audio/Video)</span>
-                <input type="file" id="groqFile" accept="audio/*,video/*">
+                <span id="groqFileName">Select File</span>
+                <input type="file" id="groqFile" accept="audio/*,video/*" onchange="updateFileName('groq')">
             </div>
+
+            <!-- Transcript လုပ်ရန် ခလုတ် (ဖိုင်ရွေးမှ ပေါ်မည်) -->
+            <button class="btn-action" id="groqBtn" style="display:none;" onclick="transcribeGroq()">Transcript လုပ်ရန်</button>
+            
             <textarea id="groqTranscript" placeholder="Transcript will appear here..." readonly></textarea>
-            <button class="btn-action" onclick="transcribeGroq()">Start Groq Transcribe</button>
+            <button class="btn-copy" onclick="copyText('groqTranscript')">Copy Text</button>
         </div>
 
         <!-- 2. Gemini Card -->
         <div class="card">
             <div class="card-header">
-                <span class="animated-logo">✨</span> Gemini Transcription
+                <span class="animated-logo">✨</span> Gemini AI Transcription
             </div>
             <input type="password" id="geminiKey" placeholder="Enter Gemini API Key">
+            
             <div class="file-drop-box">
-                <span id="geminiFileName">Select File (Audio/Video)</span>
-                <input type="file" id="geminiFile" accept="audio/*,video/*">
+                <span id="geminiFileName">Select File</span>
+                <input type="file" id="geminiFile" accept="audio/*,video/*" onchange="updateFileName('gemini')">
             </div>
+
+            <!-- Transcript လုပ်ရန် ခလုတ် (ဖိုင်ရွေးမှ ပေါ်မည်) -->
+            <button class="btn-action" id="geminiBtn" style="display:none;" onclick="transcribeGemini()">Transcript လုပ်ရန်</button>
+            
             <textarea id="geminiTranscript" placeholder="Transcript will appear here..." readonly></textarea>
-            <button class="btn-action" onclick="transcribeGemini()">Start Gemini Transcribe</button>
+            <button class="btn-copy" onclick="copyText('geminiTranscript')">Copy Text</button>
         </div>
 
         <!-- 3. Compressor Card -->
@@ -178,16 +200,29 @@
     </div>
 
     <script>
-        // File Name Display Update
-        document.getElementById('groqFile').addEventListener('change', function() {
-            if(this.files[0]) document.getElementById('groqFileName').innerText = this.files[0].name;
-        });
-        document.getElementById('geminiFile').addEventListener('change', function() {
-            if(this.files[0]) document.getElementById('geminiFileName').innerText = this.files[0].name;
-        });
-        document.getElementById('compressFile').addEventListener('change', function() {
-            if(this.files[0]) document.getElementById('compressFileName').innerText = this.files[0].name;
-        });
+        // File Name ပြောင်းလဲခြင်းနှင့် Transcript ခလုတ်ပေါ်လာစေရန်
+        function updateFileName(type) {
+            const fileInput = document.getElementById(type + 'File');
+            const fileNameSpan = document.getElementById(type + 'FileName');
+            const actionBtn = document.getElementById(type + 'Btn');
+
+            if (fileInput.files && fileInput.files[0]) {
+                fileNameSpan.innerText = fileInput.files[0].name;
+                actionBtn.style.display = "block"; // ခလုတ်ပေါ်လာစေရန်
+            }
+        }
+
+        // Copy Text Function
+        function copyText(elementId) {
+            const textElement = document.getElementById(elementId);
+            if (!textElement.value) {
+                alert("Copy လုပ်ရန် စာသားမရှိပါ!");
+                return;
+            }
+            textElement.select();
+            document.execCommand("copy");
+            alert("Transcript ကို Copy ကူးပြီးပါပြီ!");
+        }
 
         // Groq API Integration (Whisper)
         async function transcribeGroq() {
@@ -231,7 +266,6 @@
 
             transcriptBox.value = "Processing with Gemini...";
             
-            // Convert file to base64 for Gemini API
             const reader = new FileReader();
             reader.readAsDataURL(fileInput);
             reader.onload = async function () {
@@ -268,9 +302,11 @@
         function handleCompress(input) {
             const statusDiv = document.getElementById("compressStatus");
             const audioPlayer = document.getElementById("audioPlayer");
+            const fileNameSpan = document.getElementById("compressFileName");
             
             if (input.files && input.files[0]) {
                 const file = input.files[0];
+                fileNameSpan.innerText = file.name;
                 const fileSizeMB = file.size / (1024 * 1024);
                 
                 statusDiv.style.display = "block";
@@ -283,7 +319,6 @@
                     statusDiv.innerText = `File size က 25MB ကျော်နေလို့ (${fileSizeMB.toFixed(2)} MB) 25MB အောက်သို့ ချုံ့ပြီးပါပြီ (Output: Audio)`;
                 }
 
-                // Playable Audio Preview
                 audioPlayer.src = URL.createObjectURL(file);
                 audioPlayer.style.display = "block";
             }
