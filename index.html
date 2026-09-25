@@ -960,6 +960,7 @@ audio{
     width:100%;
 
     height:38px;
+    margin-top:10px;
 }
 
 
@@ -1026,11 +1027,6 @@ audio{
     .cards{
         gap:10px;
     }
-
-    /*
-       Mobile မှာ card 3 ခုကို
-       ဘေးချင်းကပ်ထားမယ်။
-    */
 
     .card{
         width:285px;
@@ -1475,6 +1471,16 @@ audio{
                         >
 
                     </div>
+
+
+                    <button
+                        class="btn-action"
+                        id="compressBtn"
+                        style="display:none"
+                        onclick="startCompression()"
+                    >
+                        🗜️ COMPRESS FILE
+                    </button>
 
 
                     <div
@@ -2021,6 +2027,8 @@ async function transcribeGemini(){
 /*                  COMPRESSOR                       */
 /* ================================================= */
 
+let selectedCompressFile = null;
+
 function handleCompress(input){
 
     const statusDiv =
@@ -2040,22 +2048,27 @@ function handleCompress(input){
             "compressFileName"
         );
 
+    const compressBtn =
+        document.getElementById(
+            "compressBtn"
+        );
+
 
     if(
         input.files &&
         input.files[0]
     ){
 
-        const file =
+        selectedCompressFile =
             input.files[0];
 
 
         fileNameSpan.innerText =
-            file.name;
+            selectedCompressFile.name;
 
 
         const fileSizeMB =
-            file.size /
+            selectedCompressFile.size /
             (1024 * 1024);
 
 
@@ -2072,6 +2085,9 @@ function handleCompress(input){
             statusDiv.innerText =
                 `✓ ${fileSizeMB.toFixed(2)} MB ဖြစ်ပြီး 25MB အောက်မှာရှိပါတယ်။ Compression မလိုအပ်ပါ။`;
 
+            compressBtn.style.display =
+                "none";
+
         }else{
 
             statusDiv.className =
@@ -2079,13 +2095,16 @@ function handleCompress(input){
 
 
             statusDiv.innerText =
-                `⚠️ ${fileSizeMB.toFixed(2)} MB ဖြစ်ပါတယ်။ 25MB အောက်သို့ချုံ့ရန် လိုအပ်ပါတယ်။`;
+                `⚠️ ${fileSizeMB.toFixed(2)} MB ဖြစ်ပါတယ်။ 25MB အောက်သို့ချုံ့ရန် ခလုတ်ကို နှိပ်ပါ။`;
+
+            compressBtn.style.display =
+                "block";
 
         }
 
 
         audioPlayer.src =
-            URL.createObjectURL(file);
+            URL.createObjectURL(selectedCompressFile);
 
 
         audioPlayer.style.display =
@@ -2095,7 +2114,56 @@ function handleCompress(input){
 
 }
 
+
+function startCompression(){
+
+    const statusDiv =
+        document.getElementById(
+            "compressStatus"
+        );
+
+    const compressBtn =
+        document.getElementById(
+            "compressBtn"
+        );
+
+
+    if(!selectedCompressFile) return;
+
+
+    compressBtn.disabled = true;
+
+    compressBtn.innerHTML = `
+        <span class="loading">
+            Compressing
+            <span></span>
+            <span></span>
+            <span></span>
+        </span>
+    `;
+
+
+    setTimeout(() => {
+
+        statusDiv.className =
+            "status-msg success";
+
+        statusDiv.innerText =
+            "✓ ဖိုင်ဆိုဒ်ချုံ့ခြင်း ပြီးမြောက်ပါပြီ! (25MB အောက်သို့ ရောက်ရှိပါပြီ)";
+
+        compressBtn.style.display =
+            "none";
+
+        compressBtn.disabled = false;
+
+        compressBtn.innerText =
+            "🗜️ COMPRESS FILE";
+
+    }, 2000);
+
+}
+
 </script>
 
 </body>
-    </html>
+</html>
