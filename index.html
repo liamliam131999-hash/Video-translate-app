@@ -10,10 +10,6 @@
 <!-- ADSTERRA SOCIAL BAR SCRIPT -->
 <script src="https://pl31506664.profitableratecpmnetwork.com/4b/ab/1d/4bab1dd00261d70b10debabe3cb34fbc.js"></script>
 
-<!-- FFMPEG.WASM SCRIPTS FOR REAL COMPRESSION -->
-<script src="https://unpkg.com/@ffmpeg/ffmpeg@0.12.10/dist/umd/ffmpeg.js"></script>
-<script src="https://unpkg.com/@ffmpeg/util@0.12.1/dist/umd/index.js"></script>
-
 <style>
 *{
     box-sizing:border-box;
@@ -2201,27 +2197,22 @@ async function startCompression(){
 
     try {
 
-        const { FFmpeg } = FFmpegWASM;
-        const { toBlobURL } = FFmpegUtil; // Fix applied here using FFmpegUtil
+        const { createFFmpeg, fetchFile } = FFmpeg;
+        const ffmpeg = createFFmpeg({ log: true });
 
-        const ffmpeg = new FFmpeg();
-
-        const baseURL = 'https://unpkg.com/@ffmpeg/core@0.12.6/dist/umd';
-        await ffmpeg.load({
-            coreURL: await toBlobURL(`${baseURL}/ffmpeg-core.js`, 'text/javascript'),
-            wasmURL: await toBlobURL(`${baseURL}/ffmpeg-core.wasm`, 'application/wasm'),
-        });
+        if (!ffmpeg.isLoaded()) {
+            await ffmpeg.load();
+        }
 
         const inputName = 'input_file';
         const outputName = 'output_compressed.mp3';
 
-        const fileData = await selectedCompressFile.arrayBuffer();
-        await ffmpeg.writeFile(inputName, new Uint8Array(fileData));
+        ffmpeg.FS('writeFile', inputName, await fetchFile(selectedCompressFile));
 
         // FFmpeg command to reduce size (Audio bitrate 64k)
-        await ffmpeg.exec(['-i', inputName, '-b:a', '64k', outputName]);
+        await ffmpeg.run('-i', inputName, '-b:a', '64k', outputName);
 
-        const data = await ffmpeg.readFile(outputName);
+        const data = ffmpeg.FS('readFile', outputName);
         const compressedBlob = new Blob([data.buffer], { type: 'audio/mp3' });
         const compressedSizeMB = compressedBlob.size / (1024 * 1024);
 
