@@ -3,7 +3,7 @@ import streamlit as st
 
 st.set_page_config(page_title="Transcript & Media Compressor", layout="wide")
 
-# Custom CSS for Vertical 3D Cards, Animations, and Expandable Design
+# Custom CSS for 3D Cards, Animations, and UI Styling
 st.markdown("""
 <style>
     .stApp {
@@ -11,20 +11,14 @@ st.markdown("""
         color: #f8fafc;
     }
     
-    /* Vertical 3D Card Styling */
-    .vertical-card {
+    /* 3D Card Styling */
+    .feature-card {
         background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%);
         border: 1px solid #334155;
         padding: 20px;
         border-radius: 16px;
         box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.3);
         margin-bottom: 15px;
-        transition: transform 0.3s ease, border-color 0.3s ease;
-    }
-    
-    .vertical-card:hover {
-        transform: translateX(5px);
-        border-color: #38bdf8;
     }
 
     /* Floating Animation for Emojis */
@@ -57,7 +51,6 @@ st.markdown("""
 
 # App Header
 st.markdown("<h1 style='text-align: center; color: #38bdf8;'>🎬 AI Transcript & Media Compressor</h1>", unsafe_allow_html=True)
-st.markdown("<p style='text-align: center; color: #94a3b8;'>ဒေါင်လိုက် 3D Card ပုံစံဖြင့် လိုအပ်သော Option ကို နှိပ်၍ အသုံးပြုပါ</p>", unsafe_allow_html=True)
 
 # Warning Notice Card
 st.markdown("""
@@ -72,68 +65,61 @@ tab1, tab2 = st.tabs(["📝 Transcript & AI", "📁 Media Compression"])
 with tab1:
     st.markdown("<br>", unsafe_allow_html=True)
     
-    # 1. Transcript / File Uploader Card (Vertical)
-    with st.expander("📄  Local ဖိုင်တင်ရန် နှင့် Transcript ထုတ်ယူခြင်း"):
+    # Groq API Option Card with Expander
+    with st.expander("⚡ Groq API Option ဖြင့် လုပ်ဆောင်ရန်"):
         st.markdown("""
-        <div class="vertical-card">
-            <span class="emoji-3d">📂</span>
-            <strong style="font-size: 1.2rem; color: #38bdf8;">ဖိုင်တင်ရန် နေရာ</strong>
-        </div>
-        """, unsafe_allow_html=True)
-        
-        uploaded_transcript_file = st.file_uploader("Audio သို့မဟုတ် Video ဖိုင် တင်ပါ (25MB အောက်)", type=["mp3", "wav", "m4a", "mp4", "mov"], key="trans_file")
-        
-        if uploaded_transcript_file is not None:
-            file_size_mb = uploaded_transcript_file.size / (1024 * 1024)
-            st.info(f"ဖိုင်ဆိုဒ်အရွယ်အစား: {file_size_mb:.2f} MB")
-            
-            if file_size_mb > 25:
-                st.error("❌ 25MB ထက်ကြီးနေပါသည်! 25MB ထက်ကြီးနေပါက Compressor ဖြင့် file size ချုံ့ပါ။")
-            else:
-                st.success("ဖိုင်ဆိုဒ် အနေအထားသင့်လျော်ပါသည်။")
-
-    # 2. Groq API Option Card (Vertical)
-    with st.expander("⚡  Groq API Option ဖြင့် လုပ်ဆောင်ရန်"):
-        st.markdown("""
-        <div class="vertical-card">
+        <div class="feature-card">
             <span class="emoji-3d">⚡</span>
-            <strong style="font-size: 1.2rem; color: #f43f5e;">Groq API ဆက်တင်များ</strong>
+            <strong style="font-size: 1.2rem; color: #f43f5e;">Groq API & Transcript ထုတ်ယူခြင်း</strong>
         </div>
         """, unsafe_allow_html=True)
         
-        groq_api_key = st.text_input("Groq API Key ထည့်ပါ", type="password", key="groq_key")
-        if st.button("Groq ဖြင့် စာသားပြင်ဆင်မည်", use_container_width=True):
+        # Choose File option inside Groq card
+        groq_file = st.file_uploader("Audio သို့မဟုတ် Video ဖိုင် တင်ပါ (25MB အောက်)", type=["mp3", "wav", "m4a", "mp4", "mov"], key="groq_file_upload")
+        
+        # Groq API Key input
+        groq_api_key = st.text_input("Groq API Key ထည့်ပါ", type="password", key="groq_key_input")
+        
+        if st.button("Groq ဖြင့် Transcript ထုတ်မည် / စာသားပြင်မည်", use_container_width=True):
             if not groq_api_key:
                 st.warning("ကျေးဇူးပြု၍ Groq API Key ထည့်ပါ။")
-            elif uploaded_transcript_file is None:
-                st.warning("ကျေးဇူးပြု၍ ပထမဦးစွာ ဖိုင်တင်ပါ။")
+            elif groq_file is None:
+                st.warning("ကျေးဇူးပြု၍ ဖိုင်တင်ပါ။")
             else:
                 try:
                     st.success("Groq API ဖြင့် အောင်မြင်စွာ လုပ်ဆောင်ပြီးပါပြီ။")
                 except Exception as e:
                     st.error(f"Groq Error: {e}")
+        
+        # Transcript Output Box with Copy-friendly area
+        st.markdown("### 📋 ထွက်လာသော Transcript စာသားများ")
+        sample_transcript = "ဒီနေရာတွင် ဖိုင်မှ ထွက်လာမည့် Transcript စာသားများ ပေါ်လာမည် ဖြစ်ပါသည်။"
+        st.text_area("Transcript Output", sample_transcript, height=150, key="groq_transcript_output")
+        st.info("💡 အထက်ပါ စာသားများကို ကူးယူလိုပါက Box ထောင့်ရှိ Copy ခလုတ်ကို အသုံးပြုနိုင်ပါသည်။")
 
-    # 3. Gemini API Option Card (Vertical)
-    with st.expander("✨  Gemini API Option ဖြင့် လုပ်ဆောင်ရန်"):
+    # Gemini API Option Card with Expander
+    with st.expander("✨ Gemini API Option ဖြင့် လုပ်ဆောင်ရန်"):
         st.markdown("""
-        <div class="vertical-card">
+        <div class="feature-card">
             <span class="emoji-3d">✨</span>
             <strong style="font-size: 1.2rem; color: #a855f7;">Gemini API ဆက်တင်များ</strong>
         </div>
         """, unsafe_allow_html=True)
         
-        gemini_api_key = st.text_input("Gemini API Key ထည့်ပါ", type="password", key="gemini_key")
-        if st.button("Gemini ဖြင့် စာသားပြင်ဆင်မည်", use_container_width=True):
+        gemini_file = st.file_uploader("Audio သို့မဟုတ် Video ဖိုင် တင်ပါ (25MB အောက်)", type=["mp3", "wav", "m4a", "mp4", "mov"], key="gemini_file_upload")
+        gemini_api_key = st.text_input("Gemini API Key ထည့်ပါ", type="password", key="gemini_key_input")
+        
+        if st.button("Gemini ဖြင့် လုပ်ဆောင်မည်", use_container_width=True):
             if not gemini_api_key:
                 st.warning("ကျေးဇူးပြု၍ Google Gemini API Key ထည့်ပါ။")
-            elif uploaded_transcript_file is None:
-                st.warning("ကျေးဇူးပြု၍ ပထမဦးစွာ ဖိုင်တင်ပါ။")
+            elif gemini_file is None:
+                st.warning("ကျေးဇူးပြု၍ ဖိုင်တင်ပါ။")
             else:
                 try:
                     import google.generativeai as genai
                     genai.configure(api_key=gemini_api_key)
                     model = genai.GenerativeModel("gemini-1.5-flash")
-                    response = model.generate_content("Analyze the uploaded media or provide summary instructions.")
+                    response = model.generate_content("Provide summary instructions.")
                     st.write("### Gemini ရလဒ်:")
                     st.write(response.text)
                 except Exception as e:
@@ -142,10 +128,9 @@ with tab1:
 with tab2:
     st.markdown("<br>", unsafe_allow_html=True)
     
-    # Media Compression Card (Vertical)
-    with st.expander("🗜️  Video File Size ချုံ့ခြင်းနှင့် Audio ထုတ်ယူခြင်း"):
+    with st.expander("🗜️ Video File Size ချုံ့ခြင်းနှင့် Audio ထုတ်ယူခြင်း"):
         st.markdown("""
-        <div class="vertical-card">
+        <div class="feature-card">
             <span class="emoji-3d">🎧</span>
             <strong style="font-size: 1.2rem; color: #38bdf8;">Video Compressor & Audio Extractor</strong>
         </div>
