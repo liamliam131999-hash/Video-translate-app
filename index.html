@@ -1,0 +1,195 @@
+<!DOCTYPE html>
+<html lang="my">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Audio & Video Transcription</title>
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: sans-serif; }
+        body { background-color: #f4f6f9; padding: 20px; color: #333; }
+        h1 { text-align: center; margin-bottom: 20px; font-size: 22px; }
+        
+        /* Grid Layout (ဘေးချင်းယှဉ်တန်းရန်) */
+        .container {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 20px;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        /* Card Style */
+        .card {
+            background: #ffffff;
+            border-radius: 12px;
+            padding: 20px;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.05);
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .card-header {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-weight: bold;
+            font-size: 18px;
+        }
+
+        .card-header img, .card-header span.icon {
+            width: 30px;
+            height: 30px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 20px;
+        }
+
+        /* Input & Select */
+        input[type="text"], input[type="file"] {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 6px;
+            font-size: 14px;
+        }
+
+        /* File Drop Box လေးထောင်ကွက် */
+        .file-drop-box {
+            border: 2px dashed #007bff;
+            border-radius: 8px;
+            padding: 25px;
+            text-align: center;
+            color: #007bff;
+            cursor: pointer;
+            background: #f8fbff;
+            position: relative;
+        }
+        .file-drop-box input {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            top: 0;
+            left: 0;
+            opacity: 0;
+            cursor: pointer;
+        }
+
+        /* Transcript & Result Box */
+        textarea {
+            width: 100%;
+            height: 90px;
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 6px;
+            resize: none;
+            font-size: 13px;
+            background: #fafafa;
+        }
+
+        .btn-copy, .btn-action {
+            background: #007bff;
+            color: white;
+            border: none;
+            padding: 8px 12px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 13px;
+            align-self: flex-end;
+        }
+        .btn-copy:hover, .btn-action:hover { background: #0056b3; }
+
+        .status-msg {
+            font-size: 12px;
+            color: #28a745;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+
+    <h1>AI Transcription & Media Compressor</h1>
+
+    <div class="container">
+        
+        <!-- Groq Card -->
+        <div class="card">
+            <div class="card-header">
+                <span class="icon">⚡</span> Groq AI
+            </div>
+            <input type="password" id="groqKey" placeholder="Enter Groq API Key">
+            
+            <div class="file-drop-box">
+                <span>Select File</span>
+                <input type="file" id="groqFile" accept="audio/*,video/*">
+            </div>
+            
+            <textarea id="groqTranscript" placeholder="Transcript will appear here..." readonly></textarea>
+            <button class="btn-copy" onclick="copyText('groqTranscript')">Copy Text</button>
+        </div>
+
+        <!-- Gemini Card -->
+        <div class="card">
+            <div class="card-header">
+                <span class="icon">✨</span> Gemini AI
+            </div>
+            <input type="password" id="geminiKey" placeholder="Enter Gemini API Key">
+            
+            <div class="file-drop-box">
+                <span>Select File</span>
+                <input type="file" id="geminiFile" accept="audio/*,video/*">
+            </div>
+            
+            <textarea id="geminiTranscript" placeholder="Transcript will appear here..." readonly></textarea>
+            <button class="btn-copy" onclick="copyText('geminiTranscript')">Copy Text</button>
+        </div>
+
+        <!-- Compressor Card -->
+        <div class="card">
+            <div class="card-header">
+                <span class="icon">🎙️</span> Compressor & Converter
+            </div>
+            
+            <div class="file-drop-box">
+                <span>Select your audio or video</span>
+                <input type="file" id="compressFile" accept="audio/*,video/*" onchange="handleCompress(this)">
+            </div>
+            
+            <div class="status-msg" id="compressStatus"></div>
+            <button class="btn-action" id="downloadBtn" style="display:none;">Download Audio Result</button>
+        </div>
+
+    </div>
+
+    <script>
+        // Copy Text Function
+        function copyText(elementId) {
+            const textElement = document.getElementById(elementId);
+            textElement.select();
+            document.execCommand("copy");
+            alert("Copied to clipboard!");
+        }
+
+        // Compressor logic simulation (25MB check)
+        function handleCompress(input) {
+            const statusDiv = document.getElementById("compressStatus");
+            const downloadBtn = document.getElementById("downloadBtn");
+            
+            if (input.files && input.files[0]) {
+                const file = input.files[0];
+                const fileSizeMB = file.size / (1024 * 1024); // Convert to MB
+                
+                // Result က Video ဖြစ်နေရင်တောင် Audio ထွက်မယ်ဆိုတဲ့ ဥပမာ
+                if (fileSizeMB <= 25) {
+                    statusDiv.innerText = `File size က 25MB အောက်မှာ (${fileSizeMB.toFixed(2)} MB) ရှိနေလို့ file size ချုံ့စရာမလိုပါ`;
+                } else {
+                    statusDiv.innerText = `File size က 25MB ကျော်နေလို့ (${fileSizeMB.toFixed(2)} MB) 25MB အောက်သို့ ချုံ့ပြီးပါပြီ (Output: Audio)`;
+                }
+                downloadBtn.style.display = "block";
+            }
+        }
+    </script>
+
+</body>
+</html>
