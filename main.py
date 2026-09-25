@@ -1,7 +1,32 @@
+import os
+import streamlit as st
+from youtube_transcript_api import YouTubeTranscriptApi, TranscriptsDisabled, NoTranscriptFound
+
+# Try importing moviepy safely
+try:
+    from moviepy.editor import VideoFileClip
+    MOVIEPY_AVAILABLE = True
+except ImportError:
+    try:
+        from moviepy import VideoFileClip
+        MOVIEPY_AVAILABLE = True
+    except ImportError:
+        MOVIEPY_AVAILABLE = False
+
+st.set_page_config(page_title="Transcript & Media Compressor", layout="wide")
+
+st.title("🎬 YouTube Transcript & Media Compressor Tool")
+st.write("YouTube URL (သို့) Local File မှ Transcript ထုတ်ယူခြင်းနှင့် Video File Size ချုံ့ကာ Audio ထုတ်ယူခြင်းကို လုပ်ဆောင်နိုင်ပါသည်။")
+
+# Warning Notice as requested
+st.warning("⚠️ **သတိပေးချက်:** 25MB ထက်ကြီးနေသော file size များကို transcript ထုတ်ယူလို့မရပါ။ 25MB size ထက်ကြီးနေပါက Compressor ဖြင့် file size ချုံ့ပါ။")
+
+# Tabs for Separation
+tab1, tab2 = st.tabs(["📝 Transcript & AI", "📁 Media Compression (Audio Extract)"])
+
 with tab1:
     st.header("1. Transcript ထုတ်ယူခြင်းနှင့် AI စာသားပြင်ဆင်ခြင်း")
     
-    # Input selection: YouTube URL or Local Audio/Video
     input_type = st.radio("အရင်းအမြစ် ရွေးချယ်ပါ:", ["YouTube URL", "Local Audio/Video File"])
     
     transcript_text = ""
@@ -53,9 +78,7 @@ with tab1:
 
     st.divider()
 
-    # Separate API Keys Section for Groq and Gemini with clear execution buttons
     st.subheader("🔑 AI API Keys နှင့် လုပ်ဆောင်ရန် ခလုတ်များ")
-    
     col1, col2 = st.columns(2)
     
     with col1:
@@ -90,3 +113,39 @@ with tab1:
                     st.write(response.text)
                 except Exception as e:
                     st.error(f"Gemini Error: {e}")
+
+with tab2:
+    st.header("2. Video File Size ချုံ့ခြင်းနှင့် Audio ထုတ်ယူခြင်း (Compression)")
+    st.write("Video ဖိုင်ကို တင်ပါက ဖိုင်ဆိုဒ်ချုံ့ပြီး Audio (MP3) သက်သက် ထွက်လာမည် ဖြစ်ပါသည်။")
+    
+    compress_file = st.file_uploader("Video ဖိုင် တင်ပါ (MP4, MOV etc.)", type=["mp4", "mov", "avi", "mkv"], key="compress")
+    
+    if compress_file is not None:
+        input_video_path = "temp_input.mp4"
+        with open(input_video_path, "wb") as f:
+            f.write(compress_file.getbuffer())
+            
+        st.video(input_video_path)
+        
+        if st.button("Video ကို Size ချုံ့ပြီး Audio သက်သက် ထုတ်မည်"):
+            if not MOVIEPY_AVAILABLE:
+                st.error("Server ပေါ်တွင် moviepy လိုက်ဘရီ အလုပ်မလုပ်သေးပါ။")
+            else:
+                with st.spinner("ဖိုင်ကို လုပ်ဆောင်နေပါပြီ ခဏစောင့်ပါ..."):
+                    try:
+                        output_audio_path = "output_audio.mp3"
+                        video_clip = VideoFileClip(input_video_path)
+                        video_clip.audio.write_audiofile(output_audio_path)
+                        video_clip.close()
+                        
+                        st.success("Audio ထုတ်ယူပြီး File Size ချုံ့ခြင်း အောင်မြင်ပါပြီ!")
+                        
+                        with open(output_audio_path, "rb") as audio_file:
+                            st.download_button(
+                                label="📥 ထွက်လာသော Audio ဖိုင်ကို Download ဆွဲရန်",
+                                data=audio_file,
+                                file_name="compressed_audio.mp3",
+                                mime="audio/mp3"
+                            )
+                    except Exception as e:
+                        st.error(f"လုပ်ဆောင်ရာတွင် အမှားဖြစ်ပွားပါသည်: {e}")
