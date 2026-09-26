@@ -199,6 +199,74 @@ body{
 }
 
 
+/* ================= API GUIDE SECTION (NEW) ================= */
+.api-guide-section {
+    background: linear-gradient(145deg, rgba(255,255,255,.04), rgba(255,255,255,.01));
+    border: 1px solid var(--border);
+    border-radius: 20px;
+    padding: 20px;
+    margin-bottom: 24px;
+    backdrop-filter: blur(20px);
+    box-shadow: 0 15px 35px rgba(0,0,0,.25);
+}
+
+.api-guide-title {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    color: #c4b5fd;
+    font-size: 13px;
+    font-weight: 800;
+    margin-bottom: 15px;
+    letter-spacing: .5px;
+}
+
+.api-guide-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 15px;
+}
+
+.api-guide-box {
+    background: rgba(0, 0, 0, 0.3);
+    border: 1px solid rgba(255, 255, 255, 0.05);
+    border-radius: 14px;
+    padding: 14px;
+}
+
+.api-guide-box h4 {
+    font-size: 11px;
+    font-weight: 700;
+    margin-bottom: 8px;
+    letter-spacing: .5px;
+}
+
+.api-guide-box.groq-guide h4 { color: #a78bfa; }
+.api-guide-box.gemini-guide h4 { color: #60a5fa; }
+
+.api-guide-box ol {
+    padding-left: 16px;
+    font-size: 10px;
+    color: var(--muted);
+    line-height: 1.6;
+}
+
+.api-guide-box ol li {
+    margin-bottom: 4px;
+}
+
+.api-guide-box a {
+    color: #38bdf8;
+    text-decoration: underline;
+}
+
+@media(max-width: 768px) {
+    .api-guide-grid {
+        grid-template-columns: 1fr;
+    }
+}
+
+
 /* ================= AD CONTAINER STYLES ================= */
 .ad-container{
     display: flex;
@@ -1174,6 +1242,36 @@ audio{
 
 
     <!-- ================================================= -->
+    <!--          API KEY GUIDE SECTION (HOME VIEW)        -->
+    <!-- ================================================= -->
+    <div class="api-guide-section">
+        <div class="api-guide-title" data-en="🔑 HOW TO GET FREE API KEYS?">
+            🔑 API Key များကို အခမဲ့ ဘယ်လိုရယူရမလဲ?
+        </div>
+        <div class="api-guide-grid">
+            <div class="api-guide-box groq-guide">
+                <h4 data-en="1. Groq API Key (Free)">1. Groq API Key ရယူရန်</h4>
+                <ol>
+                    <li><a href="https://console.groq.com/" target="_blank">Groq Console</a> သို့ ဝင်ပါ။</li>
+                    <li>Google (သို့) Email ဖြင့် အကောင့်ဖွင့်ပါ။</li>
+                    <li>ဘယ်ဘက်မီနူးရှိ <b>API Keys</b> ကို နှိပ်ပါ။</li>
+                    <li><b>Create API Key</b> နှိပ်ပြီး Copy ကူးပါ။</li>
+                </ol>
+            </div>
+            <div class="api-guide-box gemini-guide">
+                <h4 data-en="2. Gemini API Key (Free)">2. Gemini API Key ရယူရန်</h4>
+                <ol>
+                    <li><a href="https://aistudio.google.com/" target="_blank">Google AI Studio</a> သို့ ဝင်ပါ။</li>
+                    <li>Google အကောင့်ဖြင့် ဝင်ရောက်ပါ။</li>
+                    <li>အပေါ်ထောင့်နားရှိ <b>Get API key</b> ကို နှိပ်ပါ။</li>
+                    <li>Project အသစ်ဆောက်ပြီး Key ကို Copy ကူးပါ။</li>
+                </ol>
+            </div>
+        </div>
+    </div>
+
+
+    <!-- ================================================= -->
     <!--              BANNER AD (300x250)                  -->
     <!-- ================================================= -->
     <div class="ad-container">
@@ -2120,7 +2218,7 @@ async function transcribeGemini(){
             }
 
         }catch(error){
-            transcriptBox.value = "Network Error: " + error.message;
+                transcriptBox.value = "Network Error: " + error.message;
         }finally{
             button.disabled = false;
             button.innerText = "✦ TRANSCRIBE";
