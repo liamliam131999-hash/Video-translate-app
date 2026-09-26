@@ -5,7 +5,7 @@
 
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>AI Transcription Studio</title>
+<title id="pageTitle">AI Transcription Studio</title>
 
 <!-- ADSTERRA SOCIAL BAR SCRIPT -->
 <script src="https://pl31506664.profitableratecpmnetwork.com/4b/ab/1d/4bab1dd00261d70b10debabe3cb34fbc.js"></script>
@@ -65,6 +65,32 @@ body{
 .header{
     text-align:center;
     margin-bottom:22px;
+}
+
+/* LANGUAGE SWITCHER */
+.lang-switch {
+    display: flex;
+    justify-content: center;
+    gap: 8px;
+    margin-bottom: 12px;
+}
+
+.lang-btn {
+    padding: 5px 12px;
+    border-radius: 20px;
+    border: 1px solid var(--border);
+    background: rgba(255,255,255,.05);
+    color: var(--muted);
+    font-size: 11px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: 0.2s;
+}
+
+.lang-btn.active {
+    background: var(--purple);
+    border-color: var(--purple);
+    color: #fff;
 }
 
 .badge{
@@ -1102,15 +1128,21 @@ audio{
 
     <div class="header">
 
-        <div class="badge">
+        <!-- LANGUAGE SWITCHER -->
+        <div class="lang-switch">
+            <button class="lang-btn active" id="langMmBtn" onclick="setLanguage('my')">မြန်မာ</button>
+            <button class="lang-btn" id="langEnBtn" onclick="setLanguage('en')">English</button>
+        </div>
+
+        <div class="badge" data-en="✦ AI POWERED AUDIO TOOLS">
             ✦ AI POWERED AUDIO TOOLS
         </div>
 
-        <h1>
+        <h1 data-en="AI Transcription Studio">
             AI Transcription Studio
         </h1>
 
-        <p>
+        <p data-en="Transcribe • Compress • Process">
             Transcribe • Compress • Process
         </p>
 
@@ -1118,7 +1150,7 @@ audio{
         <div class="contact-box-wrap">
             <a href="https://t.me/liamliam131999" target="_blank" class="neon-contact-box">
                 <svg class="tg-icon" viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm4.64 6.8c-.15 1.58-.8 5.42-1.13 7.19-.14.75-.42 1-.68 1.03-.58.05-1.02-.38-1.58-.75-.88-.58-1.38-.94-2.23-1.5-.99-.65-.35-1.01.22-1.59.15-.15 2.71-2.48 2.76-2.69.01-.03.01-.14-.07-.2-.08-.06-.19-.04-.27-.02-.12.03-1.99 1.27-5.62 3.72-.53.36-1.01.54-1.44.53-.47-.02-1.37-.26-2.03-.48-.82-.27-1.47-.42-1.42-.88.03-.25.38-.51 1.05-.78 4.11-1.79 6.85-2.97 8.22-3.55 3.91-1.67 4.72-1.96 5.24-1.97.12 0 .39.03.56.17.15.12.19.28.21.4-.01.07.01.22-.03.35z"/></svg>
-                ဆက်သွယ်ရန် (@liamliam131999)
+                <span data-en="Contact (@liamliam131999)">ဆက်သွယ်ရန် (@liamliam131999)</span>
             </a>
         </div>
 
@@ -1179,11 +1211,11 @@ audio{
 
                     </div>
 
-                    <div class="hero-title">
+                    <div class="hero-title" data-en="GROQ AI">
                         GROQ AI
                     </div>
 
-                    <div class="hero-sub">
+                    <div class="hero-sub" data-en="FAST TRANSCRIPTION">
                         FAST TRANSCRIPTION
                     </div>
 
@@ -1192,7 +1224,7 @@ audio{
 
                 <div class="content">
 
-                    <label class="label">
+                    <label class="label" data-en="GROQ API KEY">
                         GROQ API KEY
                     </label>
 
@@ -1202,6 +1234,7 @@ audio{
                             type="password"
                             id="groqKey"
                             placeholder="Enter Groq API Key"
+                            data-en-placeholder="Enter Groq API Key"
                             oninput="saveKey('groq')"
                         >
 
@@ -1215,7 +1248,7 @@ audio{
                     </div>
 
 
-                    <label class="label">
+                    <label class="label" data-en="MEDIA FILE">
                         MEDIA FILE
                     </label>
 
@@ -1228,11 +1261,12 @@ audio{
                         <div
                             class="file-name"
                             id="groqFileName"
+                            data-en="Choose Audio / Video"
                         >
                             Choose Audio / Video
                         </div>
 
-                        <div class="file-hint">
+                        <div class="file-hint" data-en="MP3 • WAV • M4A • MP4">
                             MP3 • WAV • M4A • MP4
                         </div>
 
@@ -1251,6 +1285,7 @@ audio{
                         id="groqBtn"
                         style="display:none"
                         onclick="transcribeGroq()"
+                        data-en="⚡ TRANSCRIBE"
                     >
                         ⚡ TRANSCRIBE
                     </button>
@@ -1258,13 +1293,14 @@ audio{
 
                     <div class="result-header">
 
-                        <span class="result-title">
+                        <span class="result-title" data-en="TRANSCRIPT">
                             TRANSCRIPT
                         </span>
 
                         <button
                             class="btn-copy"
                             onclick="copyText('groqTranscript')"
+                            data-en="📋 Copy"
                         >
                             📋 Copy
                         </button>
@@ -1275,6 +1311,7 @@ audio{
                     <textarea
                         id="groqTranscript"
                         placeholder="Transcript will appear here..."
+                        data-en-placeholder="Transcript will appear here..."
                         readonly
                     ></textarea>
 
@@ -1304,11 +1341,11 @@ audio{
 
                     </div>
 
-                    <div class="hero-title">
+                    <div class="hero-title" data-en="GEMINI AI">
                         GEMINI AI
                     </div>
 
-                    <div class="hero-sub">
+                    <div class="hero-sub" data-en="INTELLIGENT TRANSCRIPTION">
                         INTELLIGENT TRANSCRIPTION
                     </div>
 
@@ -1317,7 +1354,7 @@ audio{
 
                 <div class="content">
 
-                    <label class="label">
+                    <label class="label" data-en="GEMINI API KEY">
                         GEMINI API KEY
                     </label>
 
@@ -1327,6 +1364,7 @@ audio{
                             type="password"
                             id="geminiKey"
                             placeholder="Enter Gemini API Key"
+                            data-en-placeholder="Enter Gemini API Key"
                             oninput="saveKey('gemini')"
                         >
 
@@ -1340,15 +1378,14 @@ audio{
                     </div>
 
 
-                    <div class="vpn-notice">
-
+                    <div class="vpn-notice" data-en="⚠️ VPN may be required when using Gemini API.">
                         ⚠️ Gemini API အသုံးပြုရာတွင်
                         VPN လိုအပ်နိုင်ပါသည်။
 
                     </div>
 
 
-                    <label class="label">
+                    <label class="label" data-en="MEDIA FILE">
                         MEDIA FILE
                     </label>
 
@@ -1361,11 +1398,12 @@ audio{
                         <div
                             class="file-name"
                             id="geminiFileName"
+                            data-en="Choose Audio / Video"
                         >
                             Choose Audio / Video
                         </div>
 
-                        <div class="file-hint">
+                        <div class="file-hint" data-en="MP3 • WAV • M4A • MP4">
                             MP3 • WAV • M4A • MP4
                         </div>
 
@@ -1384,6 +1422,7 @@ audio{
                         id="geminiBtn"
                         style="display:none"
                         onclick="transcribeGemini()"
+                        data-en="✦ TRANSCRIBE"
                     >
                         ✦ TRANSCRIBE
                     </button>
@@ -1391,13 +1430,14 @@ audio{
 
                     <div class="result-header">
 
-                        <span class="result-title">
+                        <span class="result-title" data-en="TRANSCRIPT">
                             TRANSCRIPT
                         </span>
 
                         <button
                             class="btn-copy"
                             onclick="copyText('geminiTranscript')"
+                            data-en="📋 Copy"
                         >
                             📋 Copy
                         </button>
@@ -1408,6 +1448,7 @@ audio{
                     <textarea
                         id="geminiTranscript"
                         placeholder="Transcript will appear here..."
+                        data-en-placeholder="Transcript will appear here..."
                         readonly
                     ></textarea>
 
@@ -1462,11 +1503,11 @@ audio{
                     </div>
 
 
-                    <div class="hero-title">
+                    <div class="hero-title" data-en="MEDIA COMPRESSOR">
                         MEDIA COMPRESSOR
                     </div>
 
-                    <div class="hero-sub">
+                    <div class="hero-sub" data-en="OPTIMIZE MEDIA SIZE">
                         OPTIMIZE MEDIA SIZE
                     </div>
 
@@ -1475,7 +1516,7 @@ audio{
 
                 <div class="content">
 
-                    <label class="label">
+                    <label class="label" data-en="MEDIA FILE">
                         MEDIA FILE
                     </label>
 
@@ -1489,11 +1530,12 @@ audio{
                         <div
                             class="file-name"
                             id="compressFileName"
+                            data-en="Choose Audio / Video"
                         >
                             Choose Audio / Video
                         </div>
 
-                        <div class="file-hint">
+                        <div class="file-hint" id="compressHint" data-en="Target size: 25MB">
                             Target size: 25MB
                         </div>
 
@@ -1512,6 +1554,7 @@ audio{
                         id="compressBtn"
                         style="display:none"
                         onclick="startCompression()"
+                        data-en="🗜️ COMPRESS FILE"
                     >
                         🗜️ COMPRESS FILE
                     </button>
@@ -1556,6 +1599,64 @@ audio{
 <script>
 
 /* ================================================= */
+/*             LANGUAGE SWITCHER LOGIC               */
+/* ================================================= */
+
+let currentLang = localStorage.getItem("app_lang") || "my";
+
+const translations = {
+    my: {
+        choose: "Choose Audio / Video",
+        groqProcessing: "⚡ Processing with Groq...",
+        geminiProcessing: "✦ Processing with Gemini...",
+        compressStart: "⏳ ဖိုင်ကို စတင်ချုံ့နေပါပြီ (ခဏစောင့်ပါ)...",
+        copySuccess: "Transcript ကို Copy ကူးပြီးပါပြီ!",
+        noText: "Copy လုပ်ရန် စာသားမရှိပါ။"
+    },
+    en: {
+        choose: "Choose Audio / Video",
+        groqProcessing: "⚡ Processing with Groq...",
+        geminiProcessing: "✦ Processing with Gemini...",
+        compressStart: "⏳ Compressing file (please wait)...",
+        copySuccess: "Transcript copied to clipboard!",
+        noText: "No text to copy!"
+    }
+};
+
+function setLanguage(lang) {
+    currentLang = lang;
+    localStorage.setItem("app_lang", lang);
+
+    document.getElementById("langMmBtn").classList.toggle("active", lang === "my");
+    document.getElementById("langEnBtn").classList.toggle("active", lang === "en");
+
+    document.querySelectorAll("[data-en]").forEach(el => {
+        if (lang === "en") {
+            if(!el.dataset.my) el.dataset.my = el.innerHTML;
+            el.innerHTML = el.dataset.en;
+        } else {
+            if(el.dataset.my) el.innerHTML = el.dataset.my;
+        }
+    });
+
+    document.querySelectorAll("[data-en-placeholder]").forEach(el => {
+        if (lang === "en") {
+            if(!el.dataset.myPlaceholder) el.dataset.myPlaceholder = el.placeholder;
+            el.placeholder = el.getAttribute("data-en-placeholder");
+        } else {
+            if(el.dataset.myPlaceholder) el.placeholder = el.dataset.myPlaceholder;
+        }
+    });
+}
+
+window.addEventListener('DOMContentLoaded', () => {
+    if(currentLang === 'en') {
+        setLanguage('en');
+    }
+});
+
+
+/* ================================================= */
 /*                  LOAD SAVED KEYS                  */
 /* ================================================= */
 
@@ -1583,6 +1684,10 @@ window.onload = function(){
             "geminiKey"
         ).value = geminiKey;
 
+    }
+
+    if(currentLang === 'en') {
+        setLanguage('en');
     }
 
 };
@@ -1689,9 +1794,7 @@ async function copyText(elementId){
 
     if(!element.value.trim()){
 
-        alert(
-            "Copy လုပ်ရန် စာသားမရှိပါ။"
-        );
+        alert(translations[currentLang].noText);
 
         return;
 
@@ -1704,9 +1807,7 @@ async function copyText(elementId){
             element.value
         );
 
-        alert(
-            "Transcript ကို Copy ကူးပြီးပါပြီ!"
-        );
+        alert(translations[currentLang].copySuccess);
 
     }catch(error){
 
@@ -1714,9 +1815,7 @@ async function copyText(elementId){
 
         document.execCommand("copy");
 
-        alert(
-            "Transcript ကို Copy ကူးပြီးပါပြီ!"
-        );
+        alert(translations[currentLang].copySuccess);
 
     }
 
@@ -1760,9 +1859,7 @@ async function transcribeGroq(){
 
     if(!apiKey){
 
-        alert(
-            "ကျေးဇူးပြု၍ Groq API Key ထည့်ပါ။"
-        );
+        alert(currentLang === 'en' ? "Please enter Groq API Key." : "ကျေးဇူးပြု၍ Groq API Key ထည့်ပါ။");
 
         return;
 
@@ -1771,9 +1868,7 @@ async function transcribeGroq(){
 
     if(!file){
 
-        alert(
-            "ကျေးဇူးပြု၍ File ရွေးပါ။"
-        );
+        alert(currentLang === 'en' ? "Please select a file." : "ကျေးဇူးပြု၍ File ရွေးပါ။");
 
         return;
 
@@ -1793,8 +1888,7 @@ async function transcribeGroq(){
     `;
 
 
-    transcriptBox.value =
-        "⚡ Processing with Groq...";
+    transcriptBox.value = translations[currentLang].groqProcessing;
 
 
     const formData =
@@ -1863,8 +1957,7 @@ async function transcribeGroq(){
 
         button.disabled = false;
 
-        button.innerText =
-            "⚡ TRANSCRIBE";
+        button.innerText = currentLang === 'en' ? "⚡ TRANSCRIBE" : "⚡ TRANSCRIBE";
 
     }
 
@@ -1908,9 +2001,7 @@ async function transcribeGemini(){
 
     if(!apiKey){
 
-        alert(
-            "ကျေးဇူးပြု၍ Gemini API Key ထည့်ပါ။"
-        );
+        alert(currentLang === 'en' ? "Please enter Gemini API Key." : "ကျေးဇူးပြု၍ Gemini API Key ထည့်ပါ။");
 
         return;
 
@@ -1919,9 +2010,7 @@ async function transcribeGemini(){
 
     if(!file){
 
-        alert(
-            "ကျေးဇူးပြု၍ File ရွေးပါ။"
-        );
+        alert(currentLang === 'en' ? "Please select a file." : "ကျေးဇူးပြု၍ File ရွေးပါ။");
 
         return;
 
@@ -1941,8 +2030,7 @@ async function transcribeGemini(){
     `;
 
 
-    transcriptBox.value =
-        "✦ Processing with Gemini...";
+    transcriptBox.value = translations[currentLang].geminiProcessing;
 
 
     const reader =
@@ -2056,8 +2144,7 @@ async function transcribeGemini(){
 
                 button.disabled = false;
 
-                button.innerText =
-                    "✦ TRANSCRIBE";
+                button.innerText = currentLang === 'en' ? "✦ TRANSCRIBE" : "✦ TRANSCRIBE";
 
             }
 
@@ -2125,7 +2212,8 @@ function handleCompress(input){
                 "status-msg success";
 
 
-            statusDiv.innerText =
+            statusDiv.innerText = currentLang === 'en' ?
+                `✓ It is ${fileSizeMB.toFixed(2)} MB, which is under 25MB. Compression not needed.` :
                 `✓ ${fileSizeMB.toFixed(2)} MB ဖြစ်ပြီး 25MB အောက်မှာရှိပါတယ်။ Compression မလိုအပ်ပါ။`;
 
             compressBtn.style.display =
@@ -2137,7 +2225,8 @@ function handleCompress(input){
                 "status-msg";
 
 
-            statusDiv.innerText =
+            statusDiv.innerText = currentLang === 'en' ?
+                `⚠️ It is ${fileSizeMB.toFixed(2)} MB. Click the button to compress under 25MB.` :
                 `⚠️ ${fileSizeMB.toFixed(2)} MB ဖြစ်ပါတယ်။ 25MB အောက်သို့ တကယ်ချုံ့ရန် ခလုတ်ကို နှိပ်ပါ။`;
 
             compressBtn.style.display =
@@ -2192,7 +2281,7 @@ async function startCompression(){
 
     statusDiv.style.display = "block";
     statusDiv.className = "status-msg";
-    statusDiv.innerText = "⏳ ဖိုင်ကို စတင်ချုံ့နေပါပြီ (ခဏစောင့်ပါ)...";
+    statusDiv.innerText = translations[currentLang].compressStart;
 
 
     try {
@@ -2222,7 +2311,8 @@ async function startCompression(){
         statusDiv.className =
             "status-msg success";
 
-        statusDiv.innerText =
+        statusDiv.innerText = currentLang === 'en' ?
+            `✓ Compression completed successfully! (Size is now ${compressedSizeMB.toFixed(2)} MB)` :
             `✓ ဖိုင်ဆိုဒ်ချုံ့ခြင်း ပြီးမြောက်ပါပြီ! (ယခုဆိုဒ်မှာ ${compressedSizeMB.toFixed(2)} MB သို့ ရောက်ရှိသွားပါပြီ)`;
 
         compressBtn.style.display =
@@ -2233,8 +2323,7 @@ async function startCompression(){
         statusDiv.className =
             "status-msg";
 
-        statusDiv.innerText =
-            "❌ ချုံ့ရာတွင် အမှားအယွင်းရှိပါသည်: " + error.message;
+        statusDiv.innerText = (currentLang === 'en' ? "❌ Error during compression: " : "❌ ချုံ့ရာတွင် အမှားအယွင်းရှိပါသည်: ") + error.message;
 
         compressBtn.disabled = false;
 
